@@ -1,0 +1,5 @@
+{"RF_value": 5, "RF_Ts": 0, "RF_Te": 20, "RF_repeated": "False", "RF_reversed": "False"}
+{"Gz_value": 1.06, "Gz_Ts": 0, "Gz_Te": 20, "Gz_repeated": "False", "Gz_reversed": "False"}
+{"Gy_value": 1, "Gy_Ts": 20, "Gy_Te": 40, "Gy_repeated": "True", "Gy_reversed": "True"}
+{"Gx_value": 1.05, "Gx_Ts": 40, "Gx_Te": 70, "Gx_repeated": "False", "Gx_reversed": "False"}
+{"Ro_value": 3, "Ro_Ts": 40, "Ro_Te": 70, "Ro_repeated": "False", "Ro_reversed": "False"}

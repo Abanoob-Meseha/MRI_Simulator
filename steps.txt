@@ -1,0 +1,27 @@
+1. Install necessary libraries: You will need to install libraries such as NumPy, Matplotlib, and SimpleITK.
+
+2. Create a 3D array: Create a 3D array of the size of the desired image. This array will represent the phantom.
+
+3. Define tissue types: Define different tissue types such as gray matter, white matter, and cerebrospinal fluid (CSF) by assigning different values to each voxel in the 3D array.
+
+4. Add noise: Add noise to the phantom image to make it more realistic.
+
+5. Convert to an image format: Convert the 3D array into an image format such as DICOM or NIfTI using SimpleITK.
+
+6. Visualize the image: Use Matplotlib to visualize the created phantom image.
+
+
+for T1:
+-black ==> Fluid (eg.urine or CSF)
+-gray  ==> Muscle - brain gray matter
+-white ==> Fats - brain white matter
+
+for T2:
+-black ==> brain white matter
+-gray  ==> Muscle - brain gray matter
+-white ==> Fluid (eg.urine or CSF) - Fats 
+
+for PD:
+-black ==> fibrocartilage
+-gray  ==> Muscle - hyaline cartilage
+-white ==> Fluid (eg.urine or CSF) - Fats 
