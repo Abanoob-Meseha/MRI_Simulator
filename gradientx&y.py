@@ -7,7 +7,7 @@ T_rz = np.array([[0, 1, 0], [-1, 0, 0], [0, 0, 1]])
 
 T = T_rx @ T_ry
 
-img = plt.imread('Phantom512.png')
+img = plt.imread('letterR.jpg')
 dimensions = img.shape
 print(dimensions)
 
