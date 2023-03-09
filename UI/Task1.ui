@@ -107,7 +107,7 @@ color: rgb(54, 193, 71);</string>
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEdit_5">
+           <widget class="QLineEdit" name="Value_Line_Edit">
             <property name="font">
              <font>
               <family>Franklin Gothic Demi</family>
@@ -161,7 +161,7 @@ border-color: rgb(54, 193, 71);</string>
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEdit_6">
+           <widget class="QLineEdit" name="Flag_Line_Edit">
             <property name="font">
              <font>
               <family>Franklin Gothic Demi</family>
@@ -222,7 +222,7 @@ border-color: rgb(54, 193, 71);</string>
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEdit_7">
+           <widget class="QLineEdit" name="Ts_Line_Edit">
             <property name="font">
              <font>
               <family>Franklin Gothic Demi</family>
@@ -256,7 +256,7 @@ border-color: rgb(54, 193, 71);</string>
            </spacer>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_2">
+           <widget class="QPushButton" name="Export_Button">
             <property name="styleSheet">
              <string notr="true">font: 10pt &quot;Franklin Gothic Demi&quot;;</string>
             </property>
@@ -292,7 +292,7 @@ border-color: rgb(54, 193, 71);</string>
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEdit_8">
+           <widget class="QLineEdit" name="Te_Line_Edit">
             <property name="font">
              <font>
               <family>Franklin Gothic Demi</family>
