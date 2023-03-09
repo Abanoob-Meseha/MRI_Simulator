@@ -3,11 +3,11 @@ import random
 import matplotlib
 matplotlib.use("Qt5Agg")
 from PyQt5 import QtCore ,uic ,QtWidgets
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QVBoxLayout, QSizePolicy, QMessageBox, QWidget,QInputDialog, QLineEdit, QFileDialog
+from PyQt5.QtWidgets import QApplication, QSizePolicy, QFileDialog
 from numpy import arange, sin, pi
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-import pathlib
+from PIL import Image
 from PyQt5.uic import loadUiType
 import nibabel as nib
 import numpy as np
@@ -38,32 +38,24 @@ class MyMplCanvas(FigureCanvas):
         pass
 
 # A static figure Canvas
-class MyStaticMplCanvas(MyMplCanvas):
+class phantomMplCanvas(MyMplCanvas):
     """Simple canvas with a sine plot."""
-    def compute_initial_figure(self):
-        img = nib.load('./data/images/BRATS_002.nii.gz')
-        imgArray = img.get_fdata()
-        imgArrayShape = imgArray.shape
-        self.axes.imshow(imgArray[:,:,imgArrayShape[2]//3 , 0], cmap='gray')
-        self.axes.plot()
-
-# A Dynamic figure canvas 
-class MyDynamicMplCanvas(MyMplCanvas):
-    """A canvas that updates itself every second with a new plot."""
     def __init__(self, *args, **kwargs):
-        MyMplCanvas.__init__(self, *args, **kwargs)
-        timer = QtCore.QTimer(self)
-        timer.timeout.connect(self.update_figure)
-        timer.start(1000)
+        super().__init__(*args, **kwargs)
+        
 
     def compute_initial_figure(self):
-        self.axes.plot([0, 1, 2, 3], [1, 2, 0, 4], 'r')
-
-    def update_figure(self):
-        # Build a list of 4 random integers between 0 and 10 (both inclusive)
-        l = [random.randint(0, 10) for i in range(4)]
-        self.axes.plot([0, 1, 2, 3], l, 'r')
-        self.draw()
+        # Open the image file
+        img = Image.open('images/Phantom512.png')
+        # Get the pixels array as a 2D list
+        pixel_data = list(img.getdata())
+        # Convert the pixel data to a NumPy array
+        t1_img_array = np.array(pixel_data)
+        # Reshape the array to match the image dimensions
+        width, height = img.size
+        t1_img_array = t1_img_array.reshape((height, width, 3))
+        self.axes.imshow(t1_img_array, cmap='gray')
+        
 
 
 # Create a class for your main window that inherits from Ui_MainWindow and QMainWindow
@@ -75,12 +67,13 @@ class MainWindow(QtWidgets.QMainWindow):
         
         #--------------Adding Canvas figures to layouts-----------#
         phantomLayout = self.verticalLayout_13 
-        phantomCanvas = MyMplCanvas(self.centralwidget, width=5, height=4, dpi=100)
-        phantomLayout.addWidget(phantomCanvas)
+        phantomCanvas = phantomMplCanvas(self.centralwidget, width=5, height=4, dpi=100)
+        phantomLayout.addWidget(phantomCanvas)# phantom Canvas
+        
 
         self.sequenceLayout = self.verticalLayout_12
         self.sequenceCanvas = MyMplCanvas(self.centralwidget, width=5, height=4, dpi=100)
-        self.sequenceLayout.addWidget(self.sequenceCanvas)
+        self.sequenceLayout.addWidget(self.sequenceCanvas)# sequence Canvas
         #self.sequenceCanvas.draw()
 
 
@@ -93,14 +86,22 @@ class MainWindow(QtWidgets.QMainWindow):
         self.Ro_line = 0
 
         # -----------------Connect buttons with functions--------------#
+        phantomCanvas.mpl_connect('button_press_event', self.phantom_onClick)
         self.actionOpen.triggered.connect(lambda:self.read_file())
+        
 
     # -----------------------functions defination------------------------#
-    def read_file(self):# BROWSE TO READ THE FILE
-       # path = QFileDialog.getOpenFileName()[0]
-       #if pathlib.Path(path).suffix == ".csv":
-        #   self.data = np.genfromtxt(path, delimiter=',')
+    def phantom_onClick(self , event):
+        # x, y = int(event.xdata), int(event.ydata)
+        # print(f'Clicked on pixel ({x}, {y})')
+        print('%s click: button=%d, x=%d, y=%d, xdata=%f, ydata=%f' %
+        ('double' if event.dblclick else 'single', event.button,
+        event.x, event.y , event.xdata, event.ydata))
+        self.T1value_label.setText(str(event.xdata))
+        self.T2value_label.setText(str(event.ydata))
+        self.PDvalue_label.setText(str(event.ydata))
 
+    def read_file(self):# BROWSE TO READ THE FILE
         self.File_Path = QFileDialog.getOpenFileName(self, "Open File", "This PC",
             "All Files (*);;JSON Files(*.json)")
 

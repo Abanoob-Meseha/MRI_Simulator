@@ -46,6 +46,8 @@ t2_arr_conv *= (tmax - tmin)
 t2_arr_conv += tmin
 print("T2 is :" , t2_arr_conv)
 
+
+
 # Reshape the array to match the image dimensions
 width, height = img.size
 t1_img_array = t1_img_array.reshape((height, width, 3))
@@ -55,4 +57,13 @@ fig.suptitle('T1 and T2')
 axs[0].imshow(t1_img_array, cmap='gray')
 axs[1].imshow(t2_arr_conv, cmap='gray')
 fig.tight_layout()
+
+#onclick function
+def onclick(event):
+    print('%s click: button=%d, x=%d, y=%d, xdata=%f, ydata=%f' %
+          ('double' if event.dblclick else 'single', event.button,
+           event.x, event.y, event.xdata, event.ydata))
+
+cid = fig.canvas.mpl_connect('button_press_event', onclick)
+
 plt.show()

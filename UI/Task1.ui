@@ -42,13 +42,6 @@ color: rgb(54, 193, 71);</string>
         </property>
        </widget>
       </item>
-      <!-- <item>
-       <widget class="QGraphicsView" name="graphicsView_3">
-        <property name="styleSheet">
-         <string notr="true">background-color: rgb(255, 255, 255);</string>
-        </property>
-       </widget>
-      </item> -->
       <item>
        <widget class="QComboBox" name="comboBox_3">
         <property name="maximumSize">
@@ -119,6 +112,9 @@ color: rgb(54, 193, 71);</string>
              <font>
               <family>Franklin Gothic Demi</family>
               <pointsize>12</pointsize>
+              <weight>50</weight>
+              <italic>false</italic>
+              <bold>false</bold>
              </font>
             </property>
             <property name="styleSheet">
@@ -170,6 +166,9 @@ border-color: rgb(54, 193, 71);</string>
              <font>
               <family>Franklin Gothic Demi</family>
               <pointsize>12</pointsize>
+              <weight>50</weight>
+              <italic>false</italic>
+              <bold>false</bold>
              </font>
             </property>
             <property name="styleSheet">
@@ -228,6 +227,9 @@ border-color: rgb(54, 193, 71);</string>
              <font>
               <family>Franklin Gothic Demi</family>
               <pointsize>12</pointsize>
+              <weight>50</weight>
+              <italic>false</italic>
+              <bold>false</bold>
              </font>
             </property>
             <property name="styleSheet">
@@ -295,6 +297,9 @@ border-color: rgb(54, 193, 71);</string>
              <font>
               <family>Franklin Gothic Demi</family>
               <pointsize>12</pointsize>
+              <weight>50</weight>
+              <italic>false</italic>
+              <bold>false</bold>
              </font>
             </property>
             <property name="styleSheet">
@@ -358,13 +363,6 @@ color: rgb(54, 193, 71);</string>
         </property>
        </widget>
       </item>
-      <!-- <item>
-       <widget class="QGraphicsView" name="graphicsView_2">
-        <property name="styleSheet">
-         <string notr="true">background-color: rgb(255, 255, 255);</string>
-        </property>
-       </widget>
-      </item> -->
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_6">
         <item>
@@ -432,7 +430,7 @@ color: rgb(54, 193, 71);</string>
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="label_7">
+             <widget class="QLabel" name="T1value_label">
               <property name="styleSheet">
                <string notr="true">font: 12pt &quot;Franklin Gothic Demi&quot;;
 border: 2px solid;
@@ -471,7 +469,7 @@ color: rgb(54, 193, 71);</string>
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="label_8">
+             <widget class="QLabel" name="T2value_label">
               <property name="styleSheet">
                <string notr="true">font: 12pt &quot;Franklin Gothic Demi&quot;;
 border: 2px solid;
@@ -505,12 +503,12 @@ color: rgb(54, 193, 71);</string>
                <enum>QFrame::Box</enum>
               </property>
               <property name="text">
-               <string>SD </string>
+               <string>PD</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="label_9">
+             <widget class="QLabel" name="PDvalue_label">
               <property name="styleSheet">
                <string notr="true">font: 12pt &quot;Franklin Gothic Demi&quot;;
 border: 2px solid;
@@ -537,7 +535,7 @@ border-color: rgb(54, 193, 71);</string>
      <x>0</x>
      <y>0</y>
      <width>1196</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
