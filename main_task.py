@@ -1,5 +1,4 @@
-import sys
-import random
+from phantominator import shepp_logan
 import matplotlib
 matplotlib.use("Qt5Agg")
 from PyQt5 import QtCore ,uic ,QtWidgets
@@ -42,19 +41,17 @@ class phantomMplCanvas(MyMplCanvas):
     """Simple canvas with a sine plot."""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
+
+    imageSize = 16
+    def setImageSize(self , size):
+        self.imageSize = size
 
     def compute_initial_figure(self):
-        # Open the image file
-        img = Image.open('images/Phantom512.png')
-        # Get the pixels array as a 2D list
-        pixel_data = list(img.getdata())
-        # Convert the pixel data to a NumPy array
-        t1_img_array = np.array(pixel_data)
-        # Reshape the array to match the image dimensions
-        width, height = img.size
-        t1_img_array = t1_img_array.reshape((height, width, 3))
-        self.axes.imshow(t1_img_array, cmap='gray')
+        #generate phantom of specific size
+        phantomImg = shepp_logan(self.imageSize)
+        # MR phantom (returns proton density, T1, and T2 maps)
+        PD, T1, T2 = shepp_logan((self.imageSize, self.imageSize, 20), MR=True)
+        self.axes.imshow(phantomImg, cmap='gray')
         
 
 
@@ -66,9 +63,9 @@ class MainWindow(QtWidgets.QMainWindow):
         uic.loadUi(r'UI/Task1.ui', self)
         
         #--------------Adding Canvas figures to layouts-----------#
-        phantomLayout = self.verticalLayout_13 
-        phantomCanvas = phantomMplCanvas(self.centralwidget, width=5, height=4, dpi=100)
-        phantomLayout.addWidget(phantomCanvas)# phantom Canvas
+        self.phantomLayout = self.verticalLayout_13 
+        self.phantomCanvas = phantomMplCanvas(self.centralwidget, width=5, height=4, dpi=100)
+        self.phantomLayout.addWidget(self.phantomCanvas)# phantom Canvas
         
 
         self.sequenceLayout = self.verticalLayout_12
@@ -86,7 +83,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.Ro_line = 0
 
         # -----------------Connect buttons with functions--------------#
-        phantomCanvas.mpl_connect('button_press_event', self.phantom_onClick)
+        self.phantomSize_comboBox.activated.connect(lambda:self.phantomSizeSelect())
         self.actionOpen.triggered.connect(lambda:self.read_file())
         
 
@@ -100,6 +97,35 @@ class MainWindow(QtWidgets.QMainWindow):
         self.T1value_label.setText(str(event.xdata))
         self.T2value_label.setText(str(event.ydata))
         self.PDvalue_label.setText(str(event.ydata))
+
+    def phantomSizeSelect(self):
+        if self.phantomSize_comboBox.currentIndex() == 0:
+            self.phantomLayout.removeWidget(self.phantomCanvas)# phantom Canvas
+            self.phantomCanvas = phantomMplCanvas(self.centralwidget, width=5, height=4, dpi=100)
+            self.phantomCanvas.setImageSize(size=16)
+            self.phantomCanvas.compute_initial_figure()
+            self.phantomLayout.addWidget(self.phantomCanvas)# phantom Canvas
+            self.phantomCanvas.mpl_connect('button_press_event', self.phantom_onClick)
+
+
+        elif self.phantomSize_comboBox.currentIndex() == 1:
+            self.phantomLayout.removeWidget(self.phantomCanvas)# phantom Canvas
+            self.phantomCanvas = phantomMplCanvas(self.centralwidget, width=5, height=4, dpi=100)
+            self.phantomCanvas.setImageSize(size=32)
+            self.phantomCanvas.compute_initial_figure()
+            self.phantomLayout.addWidget(self.phantomCanvas)# phantom Canvas
+            self.phantomCanvas.mpl_connect('button_press_event', self.phantom_onClick)
+
+
+        elif self.phantomSize_comboBox.currentIndex() == 2:
+            self.phantomLayout.removeWidget(self.phantomCanvas)# phantom Canvas
+            self.phantomCanvas = phantomMplCanvas(self.centralwidget, width=5, height=4, dpi=100)
+            self.phantomCanvas.setImageSize(64)
+            self.phantomCanvas.compute_initial_figure()
+            self.phantomLayout.addWidget(self.phantomCanvas)# phantom Canvas
+            self.phantomCanvas.mpl_connect('button_press_event', self.phantom_onClick)
+
+
 
     def read_file(self):# BROWSE TO READ THE FILE
         self.File_Path = QFileDialog.getOpenFileName(self, "Open File", "This PC",
