@@ -3,17 +3,17 @@ import matplotlib
 matplotlib.use("Qt5Agg")
 from PyQt5 import QtCore ,uic ,QtWidgets
 from PyQt5.QtWidgets import QApplication, QSizePolicy, QFileDialog
-from numpy import arange, sin, pi
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from PIL import Image
 from PyQt5.uic import loadUiType
-import nibabel as nib
 import numpy as np
-import matplotlib.pyplot as plt
 import json
 import pandas as pd
 import matplotlib.patches as patches
+from PIL import Image,ImageEnhance
+from matplotlib.widgets import RectangleSelector
+import matplotlib.pyplot as plt
+
 
 
 
@@ -44,19 +44,27 @@ class phantomMplCanvas(MyMplCanvas):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def compute_initial_figure(self , imageSizeIndex = 0 ,imageTypeIndex = 0 , clickedData = {"clicked":False , "X":0 , "Y":0}):
+    def compute_initial_figure(self , imageSizeIndex = 0 ,imageTypeIndex = 0 ,contrastFactor=float(1) , clickedData = {"clicked":False , "X":0 , "Y":0}):
         #generate phantom of specific size
         imageSize = [16 , 32 , 64]
         phantomImg = shepp_logan(imageSize[imageSizeIndex])
         # MR phantom (returns proton density, T1, and T2 maps)
         PD, T1, T2 = shepp_logan((imageSize[imageSizeIndex], imageSize[imageSizeIndex], 20), MR=True)
         imageType = [phantomImg , T1[:,:,15] , T2[:,:,15] , PD[:,:,15]]
+        # onclick adding a pixel rectangle around the pixel
         if clickedData["clicked"] == True:
             # Create a Rectangle patch
             rect = patches.Rectangle((clickedData["X"],clickedData["Y"] ), 1, 1, linewidth=1, edgecolor='r', facecolor='none')
             # Add the patch to the Axes
             self.axes.add_patch(rect)
-        self.axes.imshow(imageType[imageTypeIndex], cmap='gray')
+        # save the image to be easy to control contrast
+        plt.imsave('images/tempPhantom.png', imageType[imageTypeIndex], cmap='gray')
+        img = Image.open("images/tempPhantom.png")
+        img_contr_obj = ImageEnhance.Contrast(img)
+        factor = contrastFactor
+        e_img = img_contr_obj.enhance(factor)
+        arrayImg = np.array(e_img)
+        self.axes.imshow(arrayImg, cmap='gray')
         
 
 
@@ -72,6 +80,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.phantomCanvas = phantomMplCanvas(self.centralwidget, width=3, height=4, dpi=100)
         self.phantomLayout.addWidget(self.phantomCanvas)# phantom Canvas
         self.phantomCanvas.mpl_connect('button_press_event', self.phantom_onClick)
+        self.selector = RectangleSelector(self.phantomCanvas.axes, self.on_rect_select)
+
         
 
         self.sequenceLayout = self.verticalLayout_12
@@ -88,6 +98,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.Gx_line = 5
         self.Ro_line = 0
 
+        self.contrastFactor = float(1)
+
         # -----------------Connect buttons with functions--------------#
         self.phantomSize_comboBox.activated.connect(lambda:self.phantomImageDraw())
         self.imageTypeCombobox.activated.connect(lambda:self.phantomImageDraw())
@@ -95,7 +107,28 @@ class MainWindow(QtWidgets.QMainWindow):
         
 
     # -----------------------functions defination------------------------#
-    
+    def on_rect_select(self, eclick, erelease):
+        # do something when rectangle is selected
+        print(eclick.xdata, eclick.ydata, erelease.xdata, erelease.ydata)
+        if erelease.ydata - eclick.ydata > 0 :
+            if self.contrastFactor > 1:
+                self.contrastFactor = (self.contrastFactor - 1)
+            elif self.contrastFactor <= 0.1:
+                self.contrastFactor = (0.1)
+            else:
+                self.contrastFactor = (self.contrastFactor - 0.1)
+        else:
+            self.contrastFactor = (self.contrastFactor + 1)
+        print(self.contrastFactor)
+        self.imageSizeIndex = self.phantomSize_comboBox.currentIndex()
+        self.imageTypeIndex = self.imageTypeCombobox.currentIndex()
+        self.phantomLayout.removeWidget(self.phantomCanvas)# phantom Canvas
+        self.phantomCanvas = phantomMplCanvas(self.centralwidget, width=3, height=4, dpi=100)
+        self.phantomCanvas.compute_initial_figure(imageSizeIndex = self.imageSizeIndex ,
+                                            imageTypeIndex = self.imageTypeIndex , contrastFactor=self.contrastFactor)
+        self.phantomLayout.addWidget(self.phantomCanvas)# phantom Canvas
+        self.phantomCanvas.mpl_connect('button_press_event', self.phantom_onClick)
+
     def phantom_onClick(self , event):
         self.imageSizeIndex = self.phantomSize_comboBox.currentIndex()
         self.imageTypeIndex = self.imageTypeCombobox.currentIndex()
@@ -104,7 +137,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.phantomCanvas = phantomMplCanvas(self.centralwidget, width=3, height=4, dpi=100)
         self.phantomCanvas.compute_initial_figure(imageSizeIndex = self.imageSizeIndex ,
                                             imageTypeIndex = self.imageTypeIndex , 
-                                            clickedData={"clicked":True , "X":event.xdata , "Y":event.ydata})
+                                            clickedData={"clicked":True , "X":event.xdata , "Y":event.ydata} ,contrastFactor=self.contrastFactor)
         self.phantomLayout.addWidget(self.phantomCanvas)# phantom Canvas
         self.phantomCanvas.mpl_connect('button_press_event', self.phantom_onClick)
         print('%s click: button=%d, x=%d, y=%d, xdata=%f, ydata=%f' %
