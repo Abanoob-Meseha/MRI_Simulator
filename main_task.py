@@ -157,8 +157,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.phantomLayout.addWidget(self.phantomCanvas)# phantom Canvas
         self.phantomCanvas.mpl_connect('button_press_event', self.phantom_onClick)
 
-
-
     def read_file(self):# BROWSE TO READ THE FILE
         self.File_Path = QFileDialog.getOpenFileName(self, "Open File", "This PC",
             "All Files (*);;JSON Files(*.json)")
