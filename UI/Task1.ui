@@ -398,7 +398,7 @@ font: 14pt &quot;Franklin Gothic Demi&quot;;</string>
          </widget>
         </item>
         <item>
-         <widget class="QComboBox" name="comboBox">
+         <widget class="QComboBox" name="imageTypeCombobox">
           <property name="font">
            <font>
             <family>Franklin Gothic Demi</family>
@@ -429,7 +429,7 @@ font: 14pt &quot;Franklin Gothic Demi&quot;;</string>
           </item>
           <item>
            <property name="text">
-            <string>SD image</string>
+            <string>PD image</string>
            </property>
           </item>
          </widget>

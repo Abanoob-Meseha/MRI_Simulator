@@ -13,6 +13,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import json
 import pandas as pd
+import matplotlib.patches as patches
+
 
 
 # figure canvas classes to use them in UI
@@ -42,16 +44,19 @@ class phantomMplCanvas(MyMplCanvas):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    imageSize = 16
-    def setImageSize(self , size):
-        self.imageSize = size
-
-    def compute_initial_figure(self):
+    def compute_initial_figure(self , imageSizeIndex = 0 ,imageTypeIndex = 0 , clickedData = {"clicked":False , "X":0 , "Y":0}):
         #generate phantom of specific size
-        phantomImg = shepp_logan(self.imageSize)
+        imageSize = [16 , 32 , 64]
+        phantomImg = shepp_logan(imageSize[imageSizeIndex])
         # MR phantom (returns proton density, T1, and T2 maps)
-        PD, T1, T2 = shepp_logan((self.imageSize, self.imageSize, 20), MR=True)
-        self.axes.imshow(phantomImg, cmap='gray')
+        PD, T1, T2 = shepp_logan((imageSize[imageSizeIndex], imageSize[imageSizeIndex], 20), MR=True)
+        imageType = [phantomImg , T1[:,:,15] , T2[:,:,15] , PD[:,:,15]]
+        if clickedData["clicked"] == True:
+            # Create a Rectangle patch
+            rect = patches.Rectangle((clickedData["X"],clickedData["Y"] ), 1, 1, linewidth=1, edgecolor='r', facecolor='none')
+            # Add the patch to the Axes
+            self.axes.add_patch(rect)
+        self.axes.imshow(imageType[imageTypeIndex], cmap='gray')
         
 
 
@@ -64,8 +69,9 @@ class MainWindow(QtWidgets.QMainWindow):
         
         #--------------Adding Canvas figures to layouts-----------#
         self.phantomLayout = self.verticalLayout_13 
-        self.phantomCanvas = phantomMplCanvas(self.centralwidget, width=5, height=4, dpi=100)
+        self.phantomCanvas = phantomMplCanvas(self.centralwidget, width=3, height=4, dpi=100)
         self.phantomLayout.addWidget(self.phantomCanvas)# phantom Canvas
+        self.phantomCanvas.mpl_connect('button_press_event', self.phantom_onClick)
         
 
         self.sequenceLayout = self.verticalLayout_12
@@ -83,14 +89,24 @@ class MainWindow(QtWidgets.QMainWindow):
         self.Ro_line = 0
 
         # -----------------Connect buttons with functions--------------#
-        self.phantomSize_comboBox.activated.connect(lambda:self.phantomSizeSelect())
+        self.phantomSize_comboBox.activated.connect(lambda:self.phantomImageDraw())
+        self.imageTypeCombobox.activated.connect(lambda:self.phantomImageDraw())
         self.actionOpen.triggered.connect(lambda:self.read_file())
         
 
     # -----------------------functions defination------------------------#
+    
     def phantom_onClick(self , event):
-        # x, y = int(event.xdata), int(event.ydata)
-        # print(f'Clicked on pixel ({x}, {y})')
+        self.imageSizeIndex = self.phantomSize_comboBox.currentIndex()
+        self.imageTypeIndex = self.imageTypeCombobox.currentIndex()
+        # self.phantomCanvas.axes.cla()
+        self.phantomLayout.removeWidget(self.phantomCanvas)# phantom Canvas
+        self.phantomCanvas = phantomMplCanvas(self.centralwidget, width=3, height=4, dpi=100)
+        self.phantomCanvas.compute_initial_figure(imageSizeIndex = self.imageSizeIndex ,
+                                            imageTypeIndex = self.imageTypeIndex , 
+                                            clickedData={"clicked":True , "X":event.xdata , "Y":event.ydata})
+        self.phantomLayout.addWidget(self.phantomCanvas)# phantom Canvas
+        self.phantomCanvas.mpl_connect('button_press_event', self.phantom_onClick)
         print('%s click: button=%d, x=%d, y=%d, xdata=%f, ydata=%f' %
         ('double' if event.dblclick else 'single', event.button,
         event.x, event.y , event.xdata, event.ydata))
@@ -98,32 +114,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.T2value_label.setText(str(event.ydata))
         self.PDvalue_label.setText(str(event.ydata))
 
-    def phantomSizeSelect(self):
-        if self.phantomSize_comboBox.currentIndex() == 0:
-            self.phantomLayout.removeWidget(self.phantomCanvas)# phantom Canvas
-            self.phantomCanvas = phantomMplCanvas(self.centralwidget, width=5, height=4, dpi=100)
-            self.phantomCanvas.setImageSize(size=16)
-            self.phantomCanvas.compute_initial_figure()
-            self.phantomLayout.addWidget(self.phantomCanvas)# phantom Canvas
-            self.phantomCanvas.mpl_connect('button_press_event', self.phantom_onClick)
-
-
-        elif self.phantomSize_comboBox.currentIndex() == 1:
-            self.phantomLayout.removeWidget(self.phantomCanvas)# phantom Canvas
-            self.phantomCanvas = phantomMplCanvas(self.centralwidget, width=5, height=4, dpi=100)
-            self.phantomCanvas.setImageSize(size=32)
-            self.phantomCanvas.compute_initial_figure()
-            self.phantomLayout.addWidget(self.phantomCanvas)# phantom Canvas
-            self.phantomCanvas.mpl_connect('button_press_event', self.phantom_onClick)
-
-
-        elif self.phantomSize_comboBox.currentIndex() == 2:
-            self.phantomLayout.removeWidget(self.phantomCanvas)# phantom Canvas
-            self.phantomCanvas = phantomMplCanvas(self.centralwidget, width=5, height=4, dpi=100)
-            self.phantomCanvas.setImageSize(64)
-            self.phantomCanvas.compute_initial_figure()
-            self.phantomLayout.addWidget(self.phantomCanvas)# phantom Canvas
-            self.phantomCanvas.mpl_connect('button_press_event', self.phantom_onClick)
+    def phantomImageDraw(self):
+        #current indeces of the phantom size combobox and phantom image combobox
+        self.imageSizeIndex = self.phantomSize_comboBox.currentIndex()
+        self.imageTypeIndex = self.imageTypeCombobox.currentIndex()
+        self.phantomLayout.removeWidget(self.phantomCanvas)# phantom Canvas
+        self.phantomCanvas = phantomMplCanvas(self.centralwidget, width=3, height=4, dpi=100)
+        self.phantomCanvas.compute_initial_figure(imageSizeIndex = self.imageSizeIndex ,imageTypeIndex = self.imageTypeIndex)
+        self.phantomLayout.addWidget(self.phantomCanvas)# phantom Canvas
+        self.phantomCanvas.mpl_connect('button_press_event', self.phantom_onClick)
 
 
 
