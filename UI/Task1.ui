@@ -365,8 +365,40 @@ color: rgb(54, 193, 71);</string>
       </item>
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_6">
+       <item>
+         <widget class="QComboBox" name="phantomSize_comboBox">
+          <property name="font">
+           <font>
+            <family>Franklin Gothic Demi</family>
+            <pointsize>14</pointsize>
+            <weight>50</weight>
+            <italic>false</italic>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">color: rgb(54, 193, 71);
+font: 14pt &quot;Franklin Gothic Demi&quot;;</string>
+          </property>
+          <item>
+           <property name="text">
+            <string>16</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>32</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>64</string>
+           </property>
+          </item>
+         </widget>
+        </item>
         <item>
-         <widget class="QComboBox" name="comboBox">
+         <widget class="QComboBox" name="imageTypeCombobox">
           <property name="font">
            <font>
             <family>Franklin Gothic Demi</family>
@@ -397,7 +429,7 @@ font: 14pt &quot;Franklin Gothic Demi&quot;;</string>
           </item>
           <item>
            <property name="text">
-            <string>SD image</string>
+            <string>PD image</string>
            </property>
           </item>
          </widget>
