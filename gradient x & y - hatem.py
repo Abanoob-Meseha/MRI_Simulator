@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from phantominator import shepp_logan
 
-phantomImg = shepp_logan(32)
+phantomImg = shepp_logan(16)
 
 
 def normalize_image(image):
@@ -44,7 +44,7 @@ def Rotation_x(Image,phase_X):
 
 
 def reconstruct_image():
-    kSpace = np.zeros((32, 32), dtype=np.complex_)
+    kSpace = np.zeros((phantomImg.shape[0], phantomImg.shape[1]), dtype=np.complex_)
     modified_img = modify_image(phantomImg)
     Phase_of_X = 90
     for A in range(0, modified_img.shape[0]):
