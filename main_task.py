@@ -220,6 +220,17 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # Reconstrucing the image
 
+    #getting the value of the flip angle
+
+    def get_Flip_angle(self):
+        if self.FA_Line_Edit.text() != "":
+            self.FA = self.FA_Line_Edit.text()
+        else:
+            self.FA = 90
+        return self.FA
+
+    # normalizing the image to put the minimum and maximum pixel values between 0 and 255
+
     def normalize_image(self,image):
         # Find the minimum and maximum pixel values
         min_val = np.min(image)
@@ -229,6 +240,8 @@ class MainWindow(QtWidgets.QMainWindow):
         normalized_image = (image - min_val) / (max_val - min_val)
 
         return normalized_image
+
+    # moddifying the image to reconstruct it
 
     def modify_image(self, Phantom_img):
         normalized_img = self.normalize_image(Phantom_img)
@@ -247,6 +260,8 @@ class MainWindow(QtWidgets.QMainWindow):
                                [0, np.sin(np.radians(theta)), np.cos(np.radians(theta))]])
         return rotation_x
 
+    # applying rotation x to the modified image with the flip angle we want
+
     def Rotation_x(self, Image, phase_X):
         rotated_image = np.zeros(Image.shape)
         for i in range(0, Image.shape[0]):
@@ -256,39 +271,56 @@ class MainWindow(QtWidgets.QMainWindow):
         return rotated_image
 
     def reconstruct_image(self):
+        self.Reconstructedimage_graph.cla()
+        self.Kspace_graph.cla()
+
+        # choosing size of phantom
+        if self.phantomSize_comboBox.currentIndex()==0:
+            phantomImg = shepp_logan(16)
+        elif self.phantomSize_comboBox.currentIndex()==1:
+            phantomImg = shepp_logan(32)
+        elif self.phantomSize_comboBox.currentIndex()==2:
+            phantomImg = shepp_logan(64)
+        else:
+            phantomImg = shepp_logan(32)
+
         kSpace = np.zeros((32, 32), dtype=np.complex_)
-        Final_img = self.modify_image(phantomImg)
-        Phase_of_X = 90
-        for A in range(0, Final_img.shape[0]):
-            rotated_matrix = self.Rotation_x(Final_img, Phase_of_X)
-            for B in range(0, Final_img.shape[1]):
-                step_of_Y = (360 / Final_img.shape[0]) * B
-                step_of_X = (360 / Final_img.shape[1]) * A
-                newmatrix = np.zeros(Final_img.shape)
-                for i in range(0, Final_img.shape[0]):
-                    for j in range(0, Final_img.shape[1]):
+        modified_img = self.modify_image(phantomImg)
+        Phase_of_X = self.get_Flip_angle()
+        for A in range(0, modified_img.shape[0]):
+            rotated_matrix = self.Rotation_x(modified_img, Phase_of_X)
+            for B in range(0, modified_img.shape[1]):
+                step_of_Y = (360 / modified_img.shape[0]) * B
+                step_of_X = (360 / modified_img.shape[1]) * A
+                Final_matrix = np.zeros(modified_img.shape)
+
+                #Applying rotation z in x&y plane
+                for i in range(0, modified_img.shape[0]):
+                    for j in range(0, modified_img.shape[1]):
                         phase = step_of_Y * j + step_of_X * i
-                        newmatrix[i, j] = np.dot(self.equ_of_Rotation_z(phase), rotated_matrix[i, j])
-                # gradiented_image = gradient_x_and_y(rotated_matrix,step_of_X,step_of_Y)\
-                gradiented_image = newmatrix
-                sum_of_x = np.sum(gradiented_image[:, :, 0])
-                sum_of_y = np.sum(gradiented_image[:, :, 1])
+                        Final_matrix[i, j] = np.dot(self.equ_of_Rotation_z(phase), rotated_matrix[i, j])
+
+                #Getting the value of kspace
+                gradient_image = Final_matrix
+                sum_of_x = np.sum(gradient_image[:, :, 0])
+                sum_of_y = np.sum(gradient_image[:, :, 1])
                 complex_value = np.complex(sum_of_x, sum_of_y)
                 kSpace[A, B] = complex_value
 
             Final_img = np.zeros((phantomImg.shape[0], phantomImg.shape[1], 3))
             Final_img[:, :, 2] = phantomImg
-            plt.imshow(np.abs(kSpace), cmap='gray')
-            plt.show(block=False)
-            plt.pause(0.5)
-            plt.close()
+
+            self.Kspace_graph.axes.imshow(np.abs(kSpace), cmap='gray')
+            self.Kspace_graph.show(block=False)
+            self.Kspace_graph.pause(0.5)
+            self.Kspace_graph.close()
             print(A)
 
         Reconstructed_image = np.fft.fft2(kSpace)
-        plt.imshow(np.abs(Reconstructed_image), cmap='gray')
-        plt.show()
-        plt.imshow(np.abs(kSpace), cmap='gray')
-        plt.show()
+        self.Reconstructedimage_graph.axes.imshow(np.abs(Reconstructed_image), cmap='gray')
+        self.Reconstructedimage_graph.show()
+        self.Kspace_graph.axes.imshow(np.abs(kSpace), cmap='gray')
+        self.Kspace_graph.show()
 
 
 

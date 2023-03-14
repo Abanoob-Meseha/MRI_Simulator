@@ -45,24 +45,24 @@ def Rotation_x(Image,phase_X):
 
 def reconstruct_image():
     kSpace = np.zeros((32, 32), dtype=np.complex_)
-    Final_img = modify_image(phantomImg)
+    modified_img = modify_image(phantomImg)
     Phase_of_X = 90
-    for A in range(0, Final_img.shape[0]):
-        rotated_matrix = Rotation_x(Final_img,Phase_of_X)
-        for B in range(0, Final_img.shape[1]):
-            step_of_Y = (360 / Final_img.shape[0]) * B
-            step_of_X = (360 / Final_img.shape[1]) * A
-            newmatrix = np.zeros(Final_img.shape)
-            for i in range(0, Final_img.shape[0]):
-                for j in range(0, Final_img.shape[1]):
+    for A in range(0, modified_img.shape[0]):
+        rotated_matrix = Rotation_x(modified_img, Phase_of_X)
+        for B in range(0, modified_img.shape[1]):
+            step_of_Y = (360 / modified_img.shape[0]) * B
+            step_of_X = (360 / modified_img.shape[1]) * A
+            Final_matrix = np.zeros(modified_img.shape)
+            for i in range(0, modified_img.shape[0]):
+                for j in range(0, modified_img.shape[1]):
                     phase = step_of_Y * j + step_of_X * i
-                    newmatrix[i, j] = np.dot(equ_of_Rotation_z(phase), rotated_matrix[i, j])
-            # gradiented_image = gradient_x_and_y(rotated_matrix,step_of_X,step_of_Y)\
-            gradiented_image = newmatrix
-            sum_of_x = np.sum(gradiented_image[:, :, 0])
-            sum_of_y = np.sum(gradiented_image[:, :, 1])
+                    Final_matrix[i, j] = np.dot(equ_of_Rotation_z(phase), rotated_matrix[i, j])
+            gradient_image = Final_matrix
+            sum_of_x = np.sum(gradient_image[:, :, 0])
+            sum_of_y = np.sum(gradient_image[:, :, 1])
             complex_value = np.complex(sum_of_x, sum_of_y)
             kSpace[A, B] = complex_value
+
 
         Final_img = np.zeros((phantomImg.shape[0], phantomImg.shape[1], 3))
         Final_img[:, :, 2] = phantomImg
