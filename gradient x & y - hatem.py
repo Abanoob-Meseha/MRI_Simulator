@@ -4,17 +4,10 @@ import cv2
 from phantominator import shepp_logan
 from math import sin, cos, pi
 
+phantomImg = shepp_logan(32)
+
 
 def normalize_image(image):
-    """
-    Normalize an image from 0 to 1.
-
-    Args:
-        image (numpy.ndarray): Input image as a numpy array.
-
-    Returns:
-        numpy.ndarray: Normalized image as a numpy array.
-    """
     # Find the minimum and maximum pixel values
     min_val = np.min(image)
     max_val = np.max(image)
@@ -26,23 +19,11 @@ def normalize_image(image):
 
 
 
-phantomImg = shepp_logan(32)
-
-img = normalize_image(phantomImg)
-print(np.min(img))
-print(np.max(img))
-
-
-
-
-image = np.zeros((32, 32, 3))
-image[:,:,2] = img
-print(image.shape)
-plt.figure(figsize=(5, 5))
-plt.imshow(image, cmap='gray')
-plt.show()
-
-kSpace = np.zeros((32, 32), dtype=np.complex_)
+def modify_image(Phantom_img):
+    normalized_img = normalize_image(Phantom_img)
+    final_image = np.zeros((Phantom_img.shape[0], Phantom_img.shape[1], 3))
+    final_image[:, :, 2] = normalized_img
+    return final_image
 
 def equ_of_Rotation_z(theta):
     rotation_z = np.array(
@@ -54,46 +35,53 @@ def equ_of_Rotation_x(theta):
     return rotation_x
 
 
-def Rotation_x(Image):
-    img_transformed = np.zeros(Image.shape)
+def Rotation_x(Image,phase_X):
+    rotated_image = np.zeros(Image.shape)
     for i in range(0, Image.shape[0]):
         for j in range(0, Image.shape[1]):
-            img_transformed[i,j] = np.dot(equ_of_Rotation_x(90),Image[i,j])
+            rotated_image[i,j] = np.dot(equ_of_Rotation_x(phase_X),Image[i,j])
 
-    return img_transformed
-
-
-
-for A in range(0, image.shape[0]):
-    rotated_matrix = Rotation_x(image)
-    for B in range(0, image.shape[1]):
-        step_of_Y = (360 / image.shape[0]) * B
-        step_of_X = (360 / image.shape[1]) * A
-        newmatrix = np.zeros(image.shape)
-        for i in range(0, img.shape[0]):
-            for j in range(0, img.shape[1]):
-                phase = step_of_Y * j + step_of_X * i
-                newmatrix[i, j] = np.dot(equ_of_Rotation_z(phase), rotated_matrix[i, j])
-        # gradiented_image = gradient_x_and_y(rotated_matrix,step_of_X,step_of_Y)\
-        gradiented_image = newmatrix
-        sum_of_x = np.sum(gradiented_image[:, :, 0])
-        sum_of_y = np.sum(gradiented_image[:, :, 1])
-        complex_value = np.complex(sum_of_x,sum_of_y)
-        kSpace[A,B] = complex_value
-
-    image = np.zeros((32, 32, 3))
-    image[:, :, 2] = img
-    print(A)
-
-
-kSpace = np.fft.fft2(kSpace)
-plt.figure(figsize=(5, 5))
-plt.imshow(np.abs(kSpace), cmap='gray')
-plt.show()
+    return rotated_image
 
 
 
+def reconstruct_image():
+    kSpace = np.zeros((32, 32), dtype=np.complex_)
+    Final_img = modify_image(phantomImg)
+    Phase_of_X = 90
+    for A in range(0, Final_img.shape[0]):
+        rotated_matrix = Rotation_x(Final_img,Phase_of_X)
+        for B in range(0, Final_img.shape[1]):
+            step_of_Y = (360 / Final_img.shape[0]) * B
+            step_of_X = (360 / Final_img.shape[1]) * A
+            newmatrix = np.zeros(Final_img.shape)
+            for i in range(0, Final_img.shape[0]):
+                for j in range(0, Final_img.shape[1]):
+                    phase = step_of_Y * j + step_of_X * i
+                    newmatrix[i, j] = np.dot(equ_of_Rotation_z(phase), rotated_matrix[i, j])
+            # gradiented_image = gradient_x_and_y(rotated_matrix,step_of_X,step_of_Y)\
+            gradiented_image = newmatrix
+            sum_of_x = np.sum(gradiented_image[:, :, 0])
+            sum_of_y = np.sum(gradiented_image[:, :, 1])
+            complex_value = np.complex(sum_of_x, sum_of_y)
+            kSpace[A, B] = complex_value
 
+        Final_img = np.zeros((phantomImg.shape[0], phantomImg.shape[1], 3))
+        Final_img[:, :, 2] = phantomImg
+        plt.imshow(np.abs(kSpace), cmap='gray')
+        plt.show(block=False)
+        plt.pause(0.5)
+        plt.close()
+        print(A)
+
+    Reconstructed_image = np.fft.fft2(kSpace)
+    plt.imshow(np.abs(Reconstructed_image), cmap='gray')
+    plt.show()
+    plt.imshow(np.abs(kSpace), cmap='gray')
+    plt.show()
+
+
+reconstruct_image()
 
 
 
