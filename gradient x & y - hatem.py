@@ -1,8 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import cv2
 from phantominator import shepp_logan
-from math import sin, cos, pi
 
 phantomImg = shepp_logan(32)
 
