@@ -98,11 +98,14 @@ class MainWindow(QtWidgets.QMainWindow):
         # -----------------Connect buttons with functions--------------#
         self.actionOpen.triggered.connect(lambda:self.read_file())
         self.Sequence_Combobox.activated.connect(self.Generate_Sequence)
-        self.Value_Line_Edit.textChanged.connect(lambda: self.get_Value())
         self.Flag_Line_Edit.textChanged.connect(lambda: self.get_Flag())
+        #self.Te_Line_Edit.textChanged.connect(lambda: self.DrawTR_TE())
+        self.Value_Line_Edit.textChanged.connect(lambda: self.get_Value())
         self.Ts_Line_Edit.textChanged.connect(lambda: self.get_Ts())
         self.Te_Line_Edit.textChanged.connect(lambda: self.get_Te())
-        self.Export_Button.clicked.connect(self.write_file)
+        self.Export_Button.clicked.connect(self.DrawTR_TE)
+
+        
 
 
     # -----------------------functions defination------------------------#
@@ -200,15 +203,28 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sequenceCanvas.axes.set_yticklabels([0, 'Ro', 'Gx', 'Gy', 'Gz', 'Rf'])
         self.sequenceCanvas.draw()
 
+    def DrawTR_TE(self):
+        #if self.Flag_Line_Edit.text() != "" and self.Te_Line_Edit.text() != "":
+        TR = self.get_Flag()
+        TE = self.get_Te()
+        for p,l in zip([TR, TE], ['TE', 'TR']):
+            self.sequenceCanvas.axes.axvline(p, ls='--')
+            self.sequenceCanvas.axes.annotate(l, xy= (p, 23)) 
+        self.sequenceCanvas.draw()
 
+
+         
     def Draw_Sequence(self, df):
         self.plot_Const_Lines()
         # plotting functions of Rf,Gz,Gy,Gx,Ro
-        x1 = np.linspace(df["RF_Ts"].values[0], df["RF_Te"].values[0], 1000)
-        y1 = self.Rf_line + ((df["RF_value"].values[0]) * np.sinc(x1 - 10))
+        x1 = np.linspace(df["RF1_Ts"].values[0], df["RF1_Te"].values[0], 1000)
+        y1 = self.Rf_line + ((df["RF1_value"].values[0]) * np.sinc(x1 - 10))
 
         x5 = np.linspace(df["Ro_Ts"].values[4], df["Ro_Te"].values[4], 1000)
         y5 = self.Ro_line + ((df["Ro_value"].values[4]) * np.sinc(x5 - 55))
+
+        x6 = np.linspace(df["RF2_Ts"].values[5], df["RF2_Te"].values[5], 1000)
+        y6 = self.Rf_line + ((df["RF2_value"].values[5]) * np.sinc(x1 - 10))
 
         self.sequenceCanvas.axes.plot(x1, y1, color='maroon', marker='o')
         self.sequenceCanvas.axes.step(x=[df["Gz_Ts"].values[1], df["Gz_Te"].values[1], df["Gz_Te"].values[1]],
@@ -218,6 +234,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sequenceCanvas.axes.step(x=[df["Gx_Ts"].values[3], df["Gx_Te"].values[3], df["Gx_Te"].values[3]],
                  y=[self.Gx_line, (self.Gx_line + 1) * df["Gx_value"].values[3], self.Gx_line])
         self.sequenceCanvas.axes.plot(x5, y5, color='maroon', marker='o')
+        self.sequenceCanvas.axes.plot(x6, y6, color='maroon', marker='o')
+
 
         # Plotting repeat of Gy if it exists
         if (df["Gy_repeated"].values[2] == "True"):
@@ -237,9 +255,18 @@ class MainWindow(QtWidgets.QMainWindow):
                      y=[(self.Gy_line + 2), ((self.Gy_line + 3) * df["Gy_value"].values[2] * -1) + (self.Gy_line + 1) + 9,
                         (self.Gy_line + 2)])
 
+        # Plotting the TR and TE Lines
+        #TR = df["Ro_Ts"].values[4]+(df["Ro_Te"].values[4]-df["Ro_Ts"].values[4])/2
+        #TE = df["RF2_Ts"].values[5]+(df["RF2_Te"].values[5]-df["RF2_Ts"].values[5])/2
+        #x_points= [df["RF1_Te"].values[0]/2, TR, TE]
+        #label= ['', 'TE', 'TR']
+        #for p,l in zip(x_points, label):
+         #   self.sequenceCanvas.axes.axvline(p, ls='--')
+          #  self.sequenceCanvas.axes.annotate(l, xy= (p, 23)) 
+        
         self.sequenceCanvas.axes.set_xlabel('t (msec)')
         self.sequenceCanvas.axes.set_yticklabels([0,'Ro', 'Gx', 'Gy', 'Gz', 'Rf'])
-
+        
         self.sequenceCanvas.draw()
 
 

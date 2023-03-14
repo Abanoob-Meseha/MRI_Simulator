@@ -43,7 +43,7 @@ color: rgb(54, 193, 71);</string>
        </widget>
       </item>
       <item>
-       <widget class="QComboBox" name="comboBox_3">
+       <widget class="QComboBox" name="Sequence_Combobox">
         <property name="maximumSize">
          <size>
           <width>16777215</width>
@@ -365,7 +365,7 @@ color: rgb(54, 193, 71);</string>
       </item>
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_6">
-       <item>
+        <item>
          <widget class="QComboBox" name="phantomSize_comboBox">
           <property name="font">
            <font>
