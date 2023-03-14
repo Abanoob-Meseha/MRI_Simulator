@@ -663,13 +663,13 @@ border-color: rgb(235, 235, 235);</string>
              </spacer>
             </item>
             <item>
-             <widget class="QPushButton" name="Start_Buttun">
+             <widget class="QPushButton" name="Start_reconstruction">
               <property name="styleSheet">
                <string notr="true">font: 12pt &quot;Franklin Gothic Demi&quot;;
 background: rgb(65, 130, 195);</string>
               </property>
               <property name="text">
-               <string>Start</string>
+               <string>Start reconstruction</string>
               </property>
              </widget>
             </item>
@@ -708,7 +708,7 @@ color: rgb(235, 235, 235);</string>
            </widget>
           </item>
           <item>
-           <widget class="QGraphicsView" name="graphicsView_4">
+           <widget class="QGraphicsView" name="Kspace_graph">
             <property name="styleSheet">
              <string notr="true">background-color: rgb(255, 255, 255);</string>
             </property>
@@ -730,7 +730,7 @@ color: rgb(235, 235, 235);</string>
            </widget>
           </item>
           <item>
-           <widget class="QGraphicsView" name="graphicsView_5">
+           <widget class="QGraphicsView" name="Reconstructedimage_graph">
             <property name="styleSheet">
              <string notr="true">background-color: rgb(255, 255, 255);</string>
             </property>
@@ -757,7 +757,7 @@ color: rgb(235, 235, 235);</string>
      <x>0</x>
      <y>0</y>
      <width>1406</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
