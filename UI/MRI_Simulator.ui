@@ -473,13 +473,13 @@ color: rgb(235, 235, 235);</string>
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_4">
-            <item>
+            <!-- <item>
              <widget class="QGraphicsView" name="graphicsView_2">
               <property name="styleSheet">
                <string notr="true">background-color: rgb(255, 255, 255);</string>
               </property>
              </widget>
-            </item>
+            </item> -->
             <item>
              <widget class="QScrollBar" name="verticalScrollBar">
               <property name="orientation">
@@ -638,7 +638,7 @@ background: rgb(65, 130, 195);</string>
                 </item>
                 <item>
                  <property name="text">
-                  <string>SD image</string>
+                  <string>PD image</string>
                  </property>
                 </item>
                </widget>
@@ -659,22 +659,17 @@ background: rgb(65, 130, 195);</string>
                 </property>
                 <item>
                  <property name="text">
-                  <string>Phantom Size</string>
+                  <string>16px</string>
                  </property>
                 </item>
                 <item>
                  <property name="text">
-                  <string>16</string>
+                  <string>32px</string>
                  </property>
                 </item>
                 <item>
                  <property name="text">
-                  <string>32</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>64</string>
+                  <string>64px</string>
                  </property>
                 </item>
                </widget>

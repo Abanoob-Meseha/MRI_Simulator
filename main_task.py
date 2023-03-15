@@ -3,7 +3,7 @@ import matplotlib
 matplotlib.use("Qt5Agg")
 from PyQt5 import QtCore ,uic ,QtWidgets
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QSizePolicy, QFileDialog
+from PyQt5.QtWidgets import QApplication, QSizePolicy, QFileDialog,QGraphicsScene,QGraphicsView
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PyQt5.uic import loadUiType
@@ -79,20 +79,19 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         # -------------link ui file------------------------------#
-        uic.loadUi(r'UI/Task1.ui', self)
+        uic.loadUi(r'UI/MRI_Simulator.ui', self)
         
         #--------------Adding Canvas figures to layouts-----------#
-        self.phantomLayout = self.verticalLayout_13 
+        self.phantomLayout = self.horizontalLayout_4 
         self.phantomCanvas = phantomMplCanvas(self.centralwidget, width=3, height=4, dpi=100)
         self.phantomLayout.addWidget(self.phantomCanvas)# phantom Canvas
         self.phantomCanvas.mpl_connect('button_press_event', self.phantom_onClick)
+        
 
-        self.sequenceLayout = self.verticalLayout_12
+        self.sequenceLayout = self.verticalLayout_3
         self.sequenceCanvas = MyMplCanvas(self.centralwidget, width=5, height=4, dpi=100)
         self.sequenceLayout.addWidget(self.sequenceCanvas)# sequence Canvas
         #self.sequenceCanvas.draw()
-
-
         
         # ---------------------Global variables----------------------#
         self.Rf_line = 20
