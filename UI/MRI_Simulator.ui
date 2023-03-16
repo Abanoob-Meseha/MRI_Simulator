@@ -43,13 +43,13 @@ color: rgb(235, 235, 235);</string>
           </property>
          </widget>
         </item>
-        <item>
+        <!-- <item>
          <widget class="QGraphicsView" name="graphicsView">
           <property name="styleSheet">
            <string notr="true">background-color: rgb(255, 255, 255);</string>
           </property>
          </widget>
-        </item>
+        </item> -->
         <item>
          <spacer name="horizontalSpacer_2">
           <property name="orientation">
@@ -708,13 +708,13 @@ color: rgb(235, 235, 235);</string>
             </property>
            </widget>
           </item>
-          <item>
+          <!-- <item>
            <widget class="QGraphicsView" name="graphicsView_4">
             <property name="styleSheet">
              <string notr="true">background-color: rgb(255, 255, 255);</string>
             </property>
            </widget>
-          </item>
+          </item> -->
          </layout>
         </item>
         <item>
@@ -730,13 +730,13 @@ color: rgb(235, 235, 235);</string>
             </property>
            </widget>
           </item>
-          <item>
+          <!-- <item>
            <widget class="QGraphicsView" name="graphicsView_5">
             <property name="styleSheet">
              <string notr="true">background-color: rgb(255, 255, 255);</string>
             </property>
            </widget>
-          </item>
+          </item> -->
          </layout>
         </item>
        </layout>

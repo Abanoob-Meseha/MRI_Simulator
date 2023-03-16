@@ -82,15 +82,22 @@ class MainWindow(QtWidgets.QMainWindow):
         uic.loadUi(r'UI/MRI_Simulator.ui', self)
         
         #--------------Adding Canvas figures to layouts-----------#
-        self.phantomLayout = self.horizontalLayout_4 
+        self.phantomLayout = self.horizontalLayout_4
         self.phantomCanvas = phantomMplCanvas(self.centralwidget, width=3, height=4, dpi=100)
         self.phantomLayout.addWidget(self.phantomCanvas)# phantom Canvas
         self.phantomCanvas.mpl_connect('button_press_event', self.phantom_onClick)
         
 
         self.sequenceLayout = self.verticalLayout_3
-        self.sequenceCanvas = MyMplCanvas(self.centralwidget, width=5, height=4, dpi=100)
+        self.Reconstructedimage_graph_layout =  self.verticalLayout_6
+        self.KspaceLayout =  self.verticalLayout_5
+        self.sequenceCanvas = MyMplCanvas(self.centralwidget, width=7, height=3, dpi=100)
+        self.Reconstructedimage_graph = MyMplCanvas(self.centralwidget, width=3, height=3, dpi=100)
+        self.Kspace_graph = MyMplCanvas(self.centralwidget, width=3, height=3, dpi=100)
+
         self.sequenceLayout.addWidget(self.sequenceCanvas)# sequence Canvas
+        self.KspaceLayout.addWidget(self.Kspace_graph)
+        self.Reconstructedimage_graph_layout.addWidget(self.Reconstructedimage_graph)
         #self.sequenceCanvas.draw()
         
         # ---------------------Global variables----------------------#
@@ -208,13 +215,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sequenceCanvas.axes.set_yticklabels([ 0,'Ro', 'Gx', 'Gy', 'Gz', 'Rf'])
 
         self.sequenceCanvas.draw()
-
-
-    # def plotting(self,GRAPHICSINDEX,X_ARRAY,Y_ARRAY,COLORLIST):
-    #     self.GraphicsView[GRAPHICSINDEX].plot(X_ARRAY, Y_ARRAY, pen=COLORLIST)
-    #     self.GraphicsView[GRAPHICSINDEX].plotItem.setLabel("bottom", text="Time (ms)")
-    #     self.GraphicsView[GRAPHICSINDEX].plotItem.showGrid(True, True, alpha=1)
-    #     self.GraphicsView[GRAPHICSINDEX].plotItem.setLimits(xMin=0, xMax=10, yMin=-20, yMax=20)
 
 
     # Reconstrucing the image
