@@ -114,17 +114,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.maxContrast = 10
 
         # -----------------Connect buttons with functions--------------#
-        self.actionOpen.triggered.connect(lambda:self.read_file())
         self.phantomSize_comboBox.activated.connect(lambda:self.phantomImageDraw())
         self.imageTypeCombobox.activated.connect(lambda:self.phantomImageDraw())
+        self.actionOpen.triggered.connect(lambda:self.read_file())
+        self.Start_Buttun.clicked.connect(lambda: self.reconstruct_image())
         self.Sequence_Combobox.activated.connect(self.Generate_Sequence)
         self.Value_Line_Edit.textChanged.connect(lambda: self.get_Value())
         self.Ts_Line_Edit.textChanged.connect(lambda: self.get_Ts())
         self.Te_Line_Edit.textChanged.connect(lambda: self.get_Te())
-        self.Export_Button.clicked.connect(self.write_file)   
+        self.Export_Button.clicked.connect(self.write_file)
         self.TR_Line_Edit.textChanged.connect(lambda: self.get_ReptitionTime())
         self.TEcho_Line_Edit.textChanged.connect(lambda: self.get_EchoTime())
-        self.Send_Button.clicked.connect(self.DrawTR_TE)  
+        self.Send_Button.clicked.connect(self.DrawTR_TE)
         self.FA_Line_Edit.textChanged.connect(lambda: self.get_Flip_angle())
     # -----------------------functions defination-----------------------------------#
     def phantom_onClick(self , event ):
@@ -195,7 +196,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.Te_Line_Edit.text() != "":
             self.Te = self.Te_Line_Edit.text()
         return float(self.Te)
-    
+
     def Clear_Line_Edits(self):
         self.Value_Line_Edit.clear()
         self.Ts_Line_Edit.clear()
@@ -246,7 +247,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def plot_Const_Lines(self):
         self.sequenceCanvas.axes.cla()
-        # plotting constant lines for Rf,Gz,Gy,Gx,Ro
         [self.sequenceCanvas.axes.axhline(y=i, color='r', linestyle='-') for i in
          [self.Ro_line, self.Gx_line, self.Gy_line, self.Gz_line, self.Rf_line]]
         self.sequenceCanvas.axes.set_xlabel('t (msec)')
@@ -257,7 +257,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.TR_Line_Edit.text() != "":
             self.TR = self.TR_Line_Edit.text()
         return float(self.TR)
-    
+
     def get_EchoTime(self):
         if self.TEcho_Line_Edit.text() != "":
             self.TEcho = self.TEcho_Line_Edit.text()
@@ -268,7 +268,7 @@ class MainWindow(QtWidgets.QMainWindow):
         TE = self.get_EchoTime()
         for p,l in zip([TR, TE], ['TE', 'TR']):
             self.sequenceCanvas.axes.axvline(p, ls='--')
-            self.sequenceCanvas.axes.annotate(l, xy= (p, 23)) 
+            self.sequenceCanvas.axes.annotate(l, xy= (p, 23))
         self.sequenceCanvas.draw()
 
 
@@ -313,12 +313,12 @@ class MainWindow(QtWidgets.QMainWindow):
                      y=[(self.Gy_line + 2), ((self.Gy_line + 3) * df["Gy_value"].values[2] * -1) + (self.Gy_line + 1) + 9,
                         (self.Gy_line + 2)])
 
-        
+
         self.sequenceCanvas.axes.axvline(x=df["RF1_Te"].values[0]/2, ls='--')
-        
+
         self.sequenceCanvas.axes.set_xlabel('t (msec)')
         self.sequenceCanvas.axes.set_yticklabels([0,'Ro', 'Gx', 'Gy', 'Gz', 'Rf'])
-        
+
         self.sequenceCanvas.draw()
 
 
@@ -330,7 +330,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.FA = self.FA_Line_Edit.text()
         else:
             self.FA = 90
-        return self.FA
+        return float(self.FA)
 
     # normalizing the image to put the minimum and maximum pixel values between 0 and 255
     def normalize_image(self,image):
@@ -372,8 +372,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # Reconstrucing the image and generating kspace
     def reconstruct_image(self):
-        self.Reconstructedimage_graph.cla()
-        self.Kspace_graph.cla()
         # choosing size of phantom
         if self.phantomSize_comboBox.currentIndex()==0:
             phantomImg = shepp_logan(16)
@@ -408,16 +406,14 @@ class MainWindow(QtWidgets.QMainWindow):
             Final_img = np.zeros((phantomImg.shape[0], phantomImg.shape[1], 3))
             Final_img[:, :, 2] = phantomImg
             self.Kspace_graph.axes.imshow(np.abs(kSpace), cmap='gray')
-            self.Kspace_graph.draw(block=False)
-            self.Kspace_graph.pause(0.5)
-            self.Kspace_graph.close()
+            self.Kspace_graph.draw()
+            self.Kspace_graph.start_event_loop(0.2)
+            Reconstructed_image = np.fft.fft2(kSpace)
+            self.Reconstructedimage_graph.axes.imshow(np.abs(Reconstructed_image), cmap='gray')
+            self.Reconstructedimage_graph.draw()
+            self.Reconstructedimage_graph.start_event_loop(0.2)
             print(A)
 
-        Reconstructed_image = np.fft.fft2(kSpace)
-        self.Reconstructedimage_graph.axes.imshow(np.abs(Reconstructed_image), cmap='gray')
-        self.Reconstructedimage_graph.draw()
-        self.Kspace_graph.axes.imshow(np.abs(kSpace), cmap='gray')
-        self.Kspace_graph.draw()
 
 
 
