@@ -106,6 +106,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.Gy_line = 10
         self.Gx_line = 5
         self.Ro_line = 0
+        self.JSON_List = []
 
         # contrast Global variables
         self.contrastFactor = float(1)
@@ -113,11 +114,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.maxContrast = 10
 
         # -----------------Connect buttons with functions--------------#
+        self.actionOpen.triggered.connect(lambda:self.read_file())
         self.phantomSize_comboBox.activated.connect(lambda:self.phantomImageDraw())
         self.imageTypeCombobox.activated.connect(lambda:self.phantomImageDraw())
-        self.actionOpen.triggered.connect(lambda:self.read_file())
-        
-
+        self.Sequence_Combobox.activated.connect(self.Generate_Sequence)
+        self.Value_Line_Edit.textChanged.connect(lambda: self.get_Value())
+        self.Ts_Line_Edit.textChanged.connect(lambda: self.get_Ts())
+        self.Te_Line_Edit.textChanged.connect(lambda: self.get_Te())
+        self.Export_Button.clicked.connect(self.write_file)   
+        self.TR_Line_Edit.textChanged.connect(lambda: self.get_ReptitionTime())
+        self.TEcho_Line_Edit.textChanged.connect(lambda: self.get_EchoTime())
+        self.Send_Button.clicked.connect(self.DrawTR_TE)  
+        self.FA_Line_Edit.textChanged.connect(lambda: self.get_Flip_angle())
     # -----------------------functions defination-----------------------------------#
     def phantom_onClick(self , event ):
         print(event.button)
@@ -173,16 +181,108 @@ class MainWindow(QtWidgets.QMainWindow):
         #calling the function that used in plotting mri sequence
         self.Draw_Sequence(self.df)
 
-    def Draw_Sequence(self, df):
-        # plotting constant lines for Rf,Gz,Gy,Gx,Ro
-        [self.sequenceCanvas.axes.axhline(y=i, color='r', linestyle='-') for i in [self.Ro_line, self.Gx_line, self.Gy_line, self.Gz_line, self.Rf_line]]
+    def get_Value(self):
+        if self.Value_Line_Edit.text() != "":
+            self.value = self.Value_Line_Edit.text()
+        return float(self.value)
 
+    def get_Ts(self):
+        if self.Ts_Line_Edit.text() != "":
+            self.Ts = self.Ts_Line_Edit.text()
+        return float(self.Ts)
+
+    def get_Te(self):
+        if self.Te_Line_Edit.text() != "":
+            self.Te = self.Te_Line_Edit.text()
+        return float(self.Te)
+    
+    def Clear_Line_Edits(self):
+        self.Value_Line_Edit.clear()
+        self.Ts_Line_Edit.clear()
+        self.Te_Line_Edit.clear()
+
+    def Generate_Sequence(self):
+        val = self.get_Value()
+        Ts = self.get_Ts()
+        Te = self.get_Te()
+        if self.Sequence_Combobox.currentIndex()==0:
+            self.Draw_RF(val, Ts, Te)
+        elif self.Sequence_Combobox.currentIndex()==1:
+            self.Draw_Gradients(val, Ts, Te, self.Gz_line)
+        elif self.Sequence_Combobox.currentIndex()==2:
+            self.Draw_Gradients(val, Ts, Te, self.Gy_line)
+        elif self.Sequence_Combobox.currentIndex()==3:
+            self.Draw_Gradients(val, Ts, Te, self.Gx_line)
+        else:
+            self.Draw_Ro(val, Ts, Te)
+        self.Clear_Line_Edits()
+
+    def Draw_RF(self, val, Ts, Te):
+        self.plot_Const_Lines()
+        x1 = np.linspace(Ts, Te, 1000)
+        y1 = self.Rf_line + (val * np.sinc(x1 - 10))
+        self.sequenceCanvas.axes.plot(x1, y1, color='maroon', marker='o')
+        self.sequenceCanvas.draw()
+        data_1 = {"Value": val, "Ts": Ts, "Te": Te},
+        self.JSON_List.append(data_1)
+
+    def Draw_Ro(self, val, Ts, Te):
+        x1 = np.linspace(Ts, Te, 1000)
+        y1 = self.Ro_line + (val * np.sinc(x1 - 55))
+        self.sequenceCanvas.axes.plot(x1, y1, color='maroon', marker='o')
+        self.sequenceCanvas.draw()
+        data_1 = {'Value': val, 'Ts': Ts, 'Te': Te},
+        self.JSON_List.append(data_1)
+
+    def Draw_Gradients(self, val, Ts, Te, line):
+        self.sequenceCanvas.axes.step(x=[Ts, Te, Te], y=[line, (line + 1) * val, line])
+        self.sequenceCanvas.draw()
+        data_1 = {'Value': val, 'Ts': Ts, 'Te': Te},
+        self.JSON_List.append(data_1)
+
+    def write_file(self):
+        with open('Data_Json.json', 'w') as f:
+            json.dump(self.JSON_List, f)
+
+    def plot_Const_Lines(self):
+        self.sequenceCanvas.axes.cla()
+        # plotting constant lines for Rf,Gz,Gy,Gx,Ro
+        [self.sequenceCanvas.axes.axhline(y=i, color='r', linestyle='-') for i in
+         [self.Ro_line, self.Gx_line, self.Gy_line, self.Gz_line, self.Rf_line]]
+        self.sequenceCanvas.axes.set_xlabel('t (msec)')
+        self.sequenceCanvas.axes.set_yticklabels([0, 'Ro', 'Gx', 'Gy', 'Gz', 'Rf'])
+        self.sequenceCanvas.draw()
+
+    def get_ReptitionTime(self):
+        if self.TR_Line_Edit.text() != "":
+            self.TR = self.TR_Line_Edit.text()
+        return float(self.TR)
+    
+    def get_EchoTime(self):
+        if self.TEcho_Line_Edit.text() != "":
+            self.TEcho = self.TEcho_Line_Edit.text()
+        return float(self.TEcho)
+
+    def DrawTR_TE(self):
+        TR = self.get_ReptitionTime()
+        TE = self.get_EchoTime()
+        for p,l in zip([TR, TE], ['TE', 'TR']):
+            self.sequenceCanvas.axes.axvline(p, ls='--')
+            self.sequenceCanvas.axes.annotate(l, xy= (p, 23)) 
+        self.sequenceCanvas.draw()
+
+
+    def Draw_Sequence(self, df):
+        self.plot_Const_Lines()
         # plotting functions of Rf,Gz,Gy,Gx,Ro
-        x1 = np.linspace(df["RF_Ts"].values[0], df["RF_Te"].values[0], 1000)
-        y1 = self.Rf_line + ((df["RF_value"].values[0]) * np.sinc(x1 - 10))
+        x1 = np.linspace(df["RF1_Ts"].values[0], df["RF1_Te"].values[0], 1000)
+        y1 = self.Rf_line + ((df["RF1_value"].values[0]) * np.sinc(x1 - 10))
 
         x5 = np.linspace(df["Ro_Ts"].values[4], df["Ro_Te"].values[4], 1000)
         y5 = self.Ro_line + ((df["Ro_value"].values[4]) * np.sinc(x5 - 55))
+
+        x6 = np.linspace(df["RF2_Ts"].values[5], df["RF2_Te"].values[5], 1000)
+        y6 = self.Rf_line + ((df["RF2_value"].values[5]) * np.sinc(x1 - 10))
 
         self.sequenceCanvas.axes.plot(x1, y1, color='maroon', marker='o')
         self.sequenceCanvas.axes.step(x=[df["Gz_Ts"].values[1], df["Gz_Te"].values[1], df["Gz_Te"].values[1]],
@@ -192,6 +292,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sequenceCanvas.axes.step(x=[df["Gx_Ts"].values[3], df["Gx_Te"].values[3], df["Gx_Te"].values[3]],
                  y=[self.Gx_line, (self.Gx_line + 1) * df["Gx_value"].values[3], self.Gx_line])
         self.sequenceCanvas.axes.plot(x5, y5, color='maroon', marker='o')
+        self.sequenceCanvas.axes.plot(x6, y6, color='maroon', marker='o')
+
 
         # Plotting repeat of Gy if it exists
         if (df["Gy_repeated"].values[2] == "True"):
@@ -211,9 +313,12 @@ class MainWindow(QtWidgets.QMainWindow):
                      y=[(self.Gy_line + 2), ((self.Gy_line + 3) * df["Gy_value"].values[2] * -1) + (self.Gy_line + 1) + 9,
                         (self.Gy_line + 2)])
 
+        
+        self.sequenceCanvas.axes.axvline(x=df["RF1_Te"].values[0]/2, ls='--')
+        
         self.sequenceCanvas.axes.set_xlabel('t (msec)')
-        self.sequenceCanvas.axes.set_yticklabels([ 0,'Ro', 'Gx', 'Gy', 'Gz', 'Rf'])
-
+        self.sequenceCanvas.axes.set_yticklabels([0,'Ro', 'Gx', 'Gy', 'Gz', 'Rf'])
+        
         self.sequenceCanvas.draw()
 
 
