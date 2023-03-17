@@ -266,7 +266,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def DrawTR_TE(self):
         TR = self.get_ReptitionTime()
         TE = self.get_EchoTime()
-        for p,l in zip([TR, TE], ['TE', 'TR']):
+        for p,l in zip([TR, TE], ['TR', 'TE']):
             self.sequenceCanvas.axes.axvline(p, ls='--')
             self.sequenceCanvas.axes.annotate(l, xy= (p, 23))
         self.sequenceCanvas.draw()
