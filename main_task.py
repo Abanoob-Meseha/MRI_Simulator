@@ -16,9 +16,7 @@ from matplotlib.widgets import RectangleSelector
 import matplotlib.pyplot as plt
 
 
-
-
-# figure canvas classes to use them in UI
+# Main Figure Canvas class to use them in UI
 class MyMplCanvas(FigureCanvas):
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
     def __init__(self, parent=None, width=5, height=4, dpi=100):
@@ -39,7 +37,7 @@ class MyMplCanvas(FigureCanvas):
     def compute_initial_figure(self):
         pass
 
-# A static figure Canvas
+# A Phantom figure canvas with ploting function 
 class phantomMplCanvas(MyMplCanvas , QtWidgets.QMainWindow):
     """Simple canvas with a sine plot."""
     def __init__(self, *args, **kwargs):
@@ -72,7 +70,7 @@ class phantomMplCanvas(MyMplCanvas , QtWidgets.QMainWindow):
                 str(T2[int(clickedData["X"]) , int(clickedData["Y"]) , 15]),
                 str(PD[int(clickedData["X"]) , int(clickedData["Y"]) , 15]))
         
-
+#-------------------------------------< MAINWINDOW Code >-----------------------------------------------------
 
 # Create a class for your main window that inherits from Ui_MainWindow and QMainWindow
 class MainWindow(QtWidgets.QMainWindow):
@@ -81,26 +79,30 @@ class MainWindow(QtWidgets.QMainWindow):
         # -------------link ui file------------------------------#
         uic.loadUi(r'UI/MRI_Simulator.ui', self)
         
-        #--------------Adding Canvas figures to layouts-----------#
+        #--------------Adding Phantom figure to layouts-----------#
         self.phantomLayout = self.horizontalLayout_4
         self.phantomCanvas = phantomMplCanvas(self.centralwidget, width=3, height=4, dpi=100)
         self.phantomLayout.addWidget(self.phantomCanvas)# phantom Canvas
         self.phantomCanvas.mpl_connect('button_press_event', self.phantom_onClick)
         
-
+        #--------------Adding Sequence figure to layouts-----------#
         self.sequenceLayout = self.verticalLayout_3
-        self.Reconstructedimage_graph_layout =  self.verticalLayout_6
-        self.KspaceLayout =  self.verticalLayout_5
         self.sequenceCanvas = MyMplCanvas(self.centralwidget, width=7, height=3, dpi=100)
-        self.Reconstructedimage_graph = MyMplCanvas(self.centralwidget, width=3, height=3, dpi=100)
-        self.Kspace_graph = MyMplCanvas(self.centralwidget, width=3, height=3, dpi=100)
-
         self.sequenceLayout.addWidget(self.sequenceCanvas)# sequence Canvas
-        self.KspaceLayout.addWidget(self.Kspace_graph)
+
+        #--------------Adding Reconstucted image figure to layouts-----------#
+        self.Reconstructedimage_graph_layout =  self.verticalLayout_6
+        self.Reconstructedimage_graph = MyMplCanvas(self.centralwidget, width=3, height=3, dpi=100)
         self.Reconstructedimage_graph_layout.addWidget(self.Reconstructedimage_graph)
-        #self.sequenceCanvas.draw()
+
+        #--------------Adding K-sapce figure to layouts-----------#
+        self.KspaceLayout =  self.verticalLayout_5
+        self.Kspace_graph = MyMplCanvas(self.centralwidget, width=3, height=3, dpi=100)
+        self.KspaceLayout.addWidget(self.Kspace_graph)
+        
         
         # ---------------------Global variables----------------------#
+        #sequence variables
         self.Rf_line = 20
         self.Gz_line = 15
         self.Gy_line = 10
@@ -108,7 +110,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.Ro_line = 0
         self.JSON_List = []
 
-        # contrast Global variables
+        # contrast variables
         self.contrastFactor = float(1)
         self.minContrast = 0.1
         self.maxContrast = 10
@@ -413,10 +415,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.Reconstructedimage_graph.draw()
             self.Reconstructedimage_graph.start_event_loop(0.1)
             print(A)
-
-
-
-
 
 
 if __name__ == '__main__':
