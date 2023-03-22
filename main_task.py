@@ -422,8 +422,8 @@ class MainWindow(QtWidgets.QMainWindow):
             Final_img = np.zeros((phantomImg.shape[0], phantomImg.shape[1], 3))
             Final_img[:, :, 2] = phantomImg
             # step 5
-            Kspace_shifted = np.fft.fftshift(kSpace)
-            self.Kspace_graph.axes.imshow(np.abs(Kspace_shifted), cmap='gray')
+            # Kspace_shifted = np.fft.fftshift(kSpace)
+            self.Kspace_graph.axes.imshow(np.abs(kSpace), cmap='gray')
             self.Kspace_graph.draw()
             self.Kspace_graph.start_event_loop(0.0005)
             Reconstructed_image = np.fft.fft2(kSpace)
