@@ -14,6 +14,7 @@ import matplotlib.patches as patches
 from PIL import Image,ImageEnhance
 from matplotlib.widgets import RectangleSelector
 import matplotlib.pyplot as plt
+from threading import Thread
 
 
 # Main Figure Canvas class to use them in UI
@@ -119,7 +120,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.phantomSize_comboBox.activated.connect(lambda:self.phantomImageDraw())
         self.imageTypeCombobox.activated.connect(lambda:self.phantomImageDraw())
         self.actionOpen.triggered.connect(lambda:self.read_file())
-        self.Start_Buttun.clicked.connect(lambda: self.reconstruct_image())
+        self.Start_Buttun.clicked.connect(lambda: self.make_threading(self.reconstruct_image))
         self.Sequence_Combobox.activated.connect(self.Generate_Sequence)
         self.Value_Line_Edit.textChanged.connect(lambda: self.get_Value())
         self.Ts_Line_Edit.textChanged.connect(lambda: self.get_Ts())
@@ -431,6 +432,14 @@ class MainWindow(QtWidgets.QMainWindow):
             self.Reconstructedimage_graph.draw()
             self.Reconstructedimage_graph.start_event_loop(0.0005)
             print(R)
+
+    def make_threading(self, any_function):
+        # create a thread
+        thread = Thread(target=any_function)
+        # run the thread
+        thread.start()
+
+
 
 
 if __name__ == '__main__':
