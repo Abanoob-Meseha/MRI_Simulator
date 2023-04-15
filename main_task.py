@@ -222,24 +222,42 @@ class MainWindow(QtWidgets.QMainWindow):
         self.Clear_Line_Edits()
 
     def Draw_RF(self, val, Ts, Te):
+        if (val == 90):
+            Rf_amplitude = 3
+        elif (val > 90):
+            Rf_amplitude = 5
+        elif (val < 90):
+            Rf_amplitude = 1
         self.plot_Const_Lines()
         x1 = np.linspace(Ts, Te, 1000)
-        y1 = self.Rf_line + (val * np.sinc(x1 - 10))
+        y1 = self.Rf_line + (Rf_amplitude * np.sinc(x1 - 10))
         self.sequenceCanvas.axes.plot(x1, y1, color='maroon', marker='o')
         self.sequenceCanvas.draw()
         data_1 = {"Value": val, "Ts": Ts, "Te": Te},
         self.JSON_List.append(data_1)
 
     def Draw_Ro(self, val, Ts, Te):
+        if (val == 90):
+            Ro_amplitude = 3
+        elif (val > 90):
+            Ro_amplitude = 5
+        elif (val < 90):
+            Ro_amplitude = 1
         x1 = np.linspace(Ts, Te, 1000)
-        y1 = self.Ro_line + (val * np.sinc(x1 - 55))
+        y1 = self.Ro_line + (Ro_amplitude * np.sinc(x1 - 55))
         self.sequenceCanvas.axes.plot(x1, y1, color='maroon', marker='o')
         self.sequenceCanvas.draw()
         data_1 = {'Value': val, 'Ts': Ts, 'Te': Te},
         self.JSON_List.append(data_1)
 
     def Draw_Gradients(self, val, Ts, Te, line):
-        self.sequenceCanvas.axes.step(x=[Ts, Te, Te], y=[line, (line + 1) * val, line])
+        if (val == 90):
+            Gradient_amplitude = 1
+        elif (val > 90):
+            Gradient_amplitude = 1.06
+        elif (val < 90):
+            Gradient_amplitude = 0.98
+        self.sequenceCanvas.axes.step(x=[Ts, Te, Te], y=[line, (line + 1) * Gradient_amplitude, line])
         self.sequenceCanvas.draw()
         data_1 = {'Value': val, 'Ts': Ts, 'Te': Te},
         self.JSON_List.append(data_1)
