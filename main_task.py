@@ -422,7 +422,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 gradient_image = Final_matrix
                 sum_of_x = np.sum(gradient_image[:, :, 0])
                 sum_of_y = np.sum(gradient_image[:, :, 1])
-                complex_value = complex(sum_of_x, sum_of_y)
+                complex_value = np.complex(sum_of_x, sum_of_y)
                 kSpace[R, C] = complex_value
 
             Final_img = np.zeros((phantomImg.shape[0], phantomImg.shape[1], 3))
