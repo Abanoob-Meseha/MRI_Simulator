@@ -14,7 +14,6 @@ import matplotlib.patches as patches
 from PIL import Image,ImageEnhance
 from matplotlib.widgets import RectangleSelector
 import matplotlib.pyplot as plt
-from threading import Thread
 
 
 # Main Figure Canvas class to use them in UI
@@ -120,7 +119,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.phantomSize_comboBox.activated.connect(lambda:self.phantomImageDraw())
         self.imageTypeCombobox.activated.connect(lambda:self.phantomImageDraw())
         self.actionOpen.triggered.connect(lambda:self.read_file())
-        self.Start_Buttun.clicked.connect(lambda: self.make_threading(self.reconstruct_image))
+        self.Start_Buttun.clicked.connect(lambda: self.reconstruct_image())
         self.Sequence_Combobox.activated.connect(self.Generate_Sequence)
         self.Value_Line_Edit.textChanged.connect(lambda: self.get_Value())
         self.Ts_Line_Edit.textChanged.connect(lambda: self.get_Ts())
@@ -222,42 +221,24 @@ class MainWindow(QtWidgets.QMainWindow):
         self.Clear_Line_Edits()
 
     def Draw_RF(self, val, Ts, Te):
-        if (val == 90):
-            Rf_amplitude = 3
-        elif (val > 90):
-            Rf_amplitude = 5
-        elif (val < 90):
-            Rf_amplitude = 1
         self.plot_Const_Lines()
         x1 = np.linspace(Ts, Te, 1000)
-        y1 = self.Rf_line + (Rf_amplitude * np.sinc(x1 - 10))
+        y1 = self.Rf_line + (val * np.sinc(x1 - 10))
         self.sequenceCanvas.axes.plot(x1, y1, color='maroon', marker='o')
         self.sequenceCanvas.draw()
         data_1 = {"Value": val, "Ts": Ts, "Te": Te},
         self.JSON_List.append(data_1)
 
     def Draw_Ro(self, val, Ts, Te):
-        if (val == 90):
-            Ro_amplitude = 3
-        elif (val > 90):
-            Ro_amplitude = 5
-        elif (val < 90):
-            Ro_amplitude = 1
         x1 = np.linspace(Ts, Te, 1000)
-        y1 = self.Ro_line + (Ro_amplitude * np.sinc(x1 - 55))
+        y1 = self.Ro_line + (val * np.sinc(x1 - 55))
         self.sequenceCanvas.axes.plot(x1, y1, color='maroon', marker='o')
         self.sequenceCanvas.draw()
         data_1 = {'Value': val, 'Ts': Ts, 'Te': Te},
         self.JSON_List.append(data_1)
 
     def Draw_Gradients(self, val, Ts, Te, line):
-        if (val == 90):
-            Gradient_amplitude = 1
-        elif (val > 90):
-            Gradient_amplitude = 1.06
-        elif (val < 90):
-            Gradient_amplitude = 0.98
-        self.sequenceCanvas.axes.step(x=[Ts, Te, Te], y=[line, (line + 1) * Gradient_amplitude, line])
+        self.sequenceCanvas.axes.step(x=[Ts, Te, Te], y=[line, (line + 1) * val, line])
         self.sequenceCanvas.draw()
         data_1 = {'Value': val, 'Ts': Ts, 'Te': Te},
         self.JSON_List.append(data_1)
@@ -285,12 +266,19 @@ class MainWindow(QtWidgets.QMainWindow):
         return float(self.TEcho)
 
     def DrawTR_TE(self):
+        for line in self.sequenceCanvas.axes.lines:
+            if line.get_color() == 'green':
+                line.remove()
+        for label in self.sequenceCanvas.axes.texts:
+            if label.get_color() == 'green':
+                label.remove()
         TR = self.get_ReptitionTime()
         TE = self.get_EchoTime()
         for p,l in zip([TR, TE], ['TR', 'TE']):
-            self.sequenceCanvas.axes.axvline(p, ls='--')
-            self.sequenceCanvas.axes.annotate(l, xy= (p, 23))
+            self.sequenceCanvas.axes.axvline(p, color='green', ls='--')
+            self.sequenceCanvas.axes.text(p, 23, l, color='green')
         self.sequenceCanvas.draw()
+        
 
 
     def Draw_Sequence(self, df):
@@ -339,7 +327,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.sequenceCanvas.axes.set_xlabel('t (msec)')
         self.sequenceCanvas.axes.set_yticklabels([0,'Ro', 'Gx', 'Gy', 'Gz', 'Rf'])
-
         self.sequenceCanvas.draw()
 
 
@@ -435,7 +422,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 gradient_image = Final_matrix
                 sum_of_x = np.sum(gradient_image[:, :, 0])
                 sum_of_y = np.sum(gradient_image[:, :, 1])
-                complex_value = np.complex(sum_of_x, sum_of_y)
+                complex_value = complex(sum_of_x, sum_of_y)
                 kSpace[R, C] = complex_value
 
             Final_img = np.zeros((phantomImg.shape[0], phantomImg.shape[1], 3))
@@ -450,14 +437,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.Reconstructedimage_graph.draw()
             self.Reconstructedimage_graph.start_event_loop(0.0005)
             print(R)
-
-    def make_threading(self, any_function):
-        # create a thread
-        thread = Thread(target=any_function)
-        # run the thread
-        thread.start()
-
-
 
 
 if __name__ == '__main__':
