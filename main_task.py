@@ -14,6 +14,7 @@ import matplotlib.patches as patches
 from PIL import Image,ImageEnhance
 from matplotlib.widgets import RectangleSelector
 import matplotlib.pyplot as plt
+from threading import Thread
 
 
 # Main Figure Canvas class to use them in UI
@@ -119,7 +120,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.phantomSize_comboBox.activated.connect(lambda:self.phantomImageDraw())
         self.imageTypeCombobox.activated.connect(lambda:self.phantomImageDraw())
         self.actionOpen.triggered.connect(lambda:self.read_file())
-        self.Start_Buttun.clicked.connect(lambda: self.reconstruct_image())
+        self.Start_Buttun.clicked.connect(lambda: self.make_threading(self.reconstruct_image))
         self.Sequence_Combobox.activated.connect(self.Generate_Sequence)
         self.Value_Line_Edit.textChanged.connect(lambda: self.get_Value())
         self.Ts_Line_Edit.textChanged.connect(lambda: self.get_Ts())
@@ -221,24 +222,42 @@ class MainWindow(QtWidgets.QMainWindow):
         self.Clear_Line_Edits()
 
     def Draw_RF(self, val, Ts, Te):
+        if (val == 90):
+            Rf_amplitude = 3
+        elif (val > 90):
+            Rf_amplitude = 5
+        elif (val < 90):
+            Rf_amplitude = 1
         self.plot_Const_Lines()
         x1 = np.linspace(Ts, Te, 1000)
-        y1 = self.Rf_line + (val * np.sinc(x1 - 10))
+        y1 = self.Rf_line + (Rf_amplitude * np.sinc(x1 - 10))
         self.sequenceCanvas.axes.plot(x1, y1, color='maroon', marker='o')
         self.sequenceCanvas.draw()
         data_1 = {"Value": val, "Ts": Ts, "Te": Te},
         self.JSON_List.append(data_1)
 
     def Draw_Ro(self, val, Ts, Te):
+        if (val == 90):
+            Ro_amplitude = 3
+        elif (val > 90):
+            Ro_amplitude = 5
+        elif (val < 90):
+            Ro_amplitude = 1
         x1 = np.linspace(Ts, Te, 1000)
-        y1 = self.Ro_line + (val * np.sinc(x1 - 55))
+        y1 = self.Ro_line + (Ro_amplitude * np.sinc(x1 - 55))
         self.sequenceCanvas.axes.plot(x1, y1, color='maroon', marker='o')
         self.sequenceCanvas.draw()
         data_1 = {'Value': val, 'Ts': Ts, 'Te': Te},
         self.JSON_List.append(data_1)
 
     def Draw_Gradients(self, val, Ts, Te, line):
-        self.sequenceCanvas.axes.step(x=[Ts, Te, Te], y=[line, (line + 1) * val, line])
+        if (val == 90):
+            Gradient_amplitude = 1
+        elif (val > 90):
+            Gradient_amplitude = 1.06
+        elif (val < 90):
+            Gradient_amplitude = 0.98
+        self.sequenceCanvas.axes.step(x=[Ts, Te, Te], y=[line, (line + 1) * Gradient_amplitude, line])
         self.sequenceCanvas.draw()
         data_1 = {'Value': val, 'Ts': Ts, 'Te': Te},
         self.JSON_List.append(data_1)
@@ -438,6 +457,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.Reconstructedimage_graph.start_event_loop(0.0005)
             print(R)
 
+    def make_threading(self, any_function):
+        # create a thread
+        thread = Thread(target=any_function)
+        # run the thread
+        thread.start()
 
 if __name__ == '__main__':
     # Instantiate the main window class and show it
