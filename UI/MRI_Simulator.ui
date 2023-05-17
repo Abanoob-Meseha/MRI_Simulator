@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1406</width>
-    <height>929</height>
+    <width>994</width>
+    <height>874</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -43,13 +43,6 @@ color: rgb(235, 235, 235);</string>
           </property>
          </widget>
         </item>
-        <!-- <item>
-         <widget class="QGraphicsView" name="graphicsView">
-          <property name="styleSheet">
-           <string notr="true">background-color: rgb(255, 255, 255);</string>
-          </property>
-         </widget>
-        </item> -->
         <item>
          <spacer name="horizontalSpacer_2">
           <property name="orientation">
@@ -473,13 +466,6 @@ color: rgb(235, 235, 235);</string>
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_4">
-            <!-- <item>
-             <widget class="QGraphicsView" name="graphicsView_2">
-              <property name="styleSheet">
-               <string notr="true">background-color: rgb(255, 255, 255);</string>
-              </property>
-             </widget>
-            </item> -->
             <item>
              <widget class="QScrollBar" name="verticalScrollBar">
               <property name="orientation">
@@ -708,13 +694,6 @@ color: rgb(235, 235, 235);</string>
             </property>
            </widget>
           </item>
-          <!-- <item>
-           <widget class="QGraphicsView" name="graphicsView_4">
-            <property name="styleSheet">
-             <string notr="true">background-color: rgb(255, 255, 255);</string>
-            </property>
-           </widget>
-          </item> -->
          </layout>
         </item>
         <item>
@@ -730,13 +709,6 @@ color: rgb(235, 235, 235);</string>
             </property>
            </widget>
           </item>
-          <!-- <item>
-           <widget class="QGraphicsView" name="graphicsView_5">
-            <property name="styleSheet">
-             <string notr="true">background-color: rgb(255, 255, 255);</string>
-            </property>
-           </widget>
-          </item> -->
          </layout>
         </item>
        </layout>
@@ -757,8 +729,8 @@ color: rgb(235, 235, 235);</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1406</width>
-     <height>21</height>
+     <width>994</width>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

@@ -84,26 +84,26 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
         # -------------link ui file------------------------------#
         uic.loadUi(r'UI/MRI_Simulator.ui', self)
-        
-        #--------------Adding Phantom figure to layouts-----------#
+
+        # --------------Adding Phantom figure to layouts-----------#
         self.phantomLayout = self.horizontalLayout_4
         self.phantomCanvas = phantomMplCanvas(self.centralwidget, width=3, height=4, dpi=100)
-        self.phantomLayout.addWidget(self.phantomCanvas)# phantom Canvas
+        self.phantomLayout.addWidget(self.phantomCanvas)  # phantom Canvas
         self.phantomCanvas.mpl_connect('button_press_event', self.phantom_onClick)
         self.phantomCanvas.mpl_connect('button_release_event', self.phantom_contrast)
-        
-        #--------------Adding Sequence figure to layouts-----------#
+
+        # --------------Adding Sequence figure to layouts-----------#
         self.sequenceLayout = self.verticalLayout_3
         self.sequenceCanvas = MyMplCanvas(self.centralwidget, width=7, height=3, dpi=100)
-        self.sequenceLayout.addWidget(self.sequenceCanvas)# sequence Canvas
+        self.sequenceLayout.addWidget(self.sequenceCanvas)  # sequence Canvas
 
-        #--------------Adding Reconstucted image figure to layouts-----------#
-        self.Reconstructedimage_graph_layout =  self.verticalLayout_6
+        # --------------Adding Reconstucted image figure to layouts-----------#
+        self.Reconstructedimage_graph_layout = self.verticalLayout_6
         self.Reconstructedimage_graph = MyMplCanvas(self.centralwidget, width=3, height=3, dpi=100)
         self.Reconstructedimage_graph_layout.addWidget(self.Reconstructedimage_graph)
 
-        #--------------Adding K-sapce figure to layouts-----------#
-        self.KspaceLayout =  self.verticalLayout_5
+        # --------------Adding K-sapce figure to layouts-----------#
+        self.KspaceLayout = self.verticalLayout_5
         self.Kspace_graph = MyMplCanvas(self.centralwidget, width=3, height=3, dpi=100)
         self.KspaceLayout.addWidget(self.Kspace_graph)
         
@@ -125,6 +125,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # -----------------Connect buttons with functions--------------#
         self.phantomSize_comboBox.activated.connect(lambda:self.phantomImageDraw())
+        self.Prep_pulse_comboBox.activated.connect(lambda: self.choose_prep_pulse())
         self.imageTypeCombobox.activated.connect(lambda:self.phantomImageDraw())
         self.actionOpen.triggered.connect(lambda:self.read_file())
         self.Start_Buttun.clicked.connect(lambda: self.make_threading(self.reconstruct_image))
@@ -309,11 +310,41 @@ class MainWindow(QtWidgets.QMainWindow):
             self.sequenceCanvas.axes.axvline(p, color='green', ls='--')
             self.sequenceCanvas.axes.text(p, 23, l, color='green')
         self.sequenceCanvas.draw()
+
+    # choose prep pulse function
+    def choose_prep_pulse(self):
+        if self.Prep_pulse_comboBox.currentIndex()==0:
+            self.plot_Const_Lines()
+        elif self.Prep_pulse_comboBox.currentIndex()==1:
+            self.plot_Const_Lines()
+            x_rf = np.linspace(0, 20, 1000)
+            y_rf = self.Rf_line + ((5) * np.sinc(x_rf - 10))
+            self.sequenceCanvas.axes.step(x=[0, 20, 20], y=[self.Gz_line, (self.Gz_line + 1) * 1.06, self.Gz_line])
+            self.sequenceCanvas.axes.plot(x_rf, y_rf, color='maroon', marker='o')
+            self.sequenceCanvas.draw()
+        elif self.Prep_pulse_comboBox.currentIndex()==2:
+            self.plot_Const_Lines()
+            x_rf1 = np.linspace(0, 20, 1000)
+            y_rf1 = self.Rf_line + ((3) * np.sinc(x_rf1 - 10))
+            x_rf2 = np.linspace(30, 50, 1000)
+            y_rf2 = self.Rf_line + ((3) * np.sinc(x_rf2 - 40))
+            self.sequenceCanvas.axes.plot(x_rf1, y_rf1, color='maroon', marker='o')
+            self.sequenceCanvas.axes.plot(x_rf2, y_rf2, color='maroon', marker='o')
+            self.sequenceCanvas.draw()
+        elif self.Prep_pulse_comboBox.currentIndex()==3:
+            self.plot_Const_Lines()
+            x_rf1 = np.linspace(0, 20, 1000)
+            y_rf1 = self.Rf_line + ((3) * np.sinc(x_rf1 - 10))
+            self.sequenceCanvas.axes.step(x=[20, 30, 30], y=[self.Gx_line, (self.Gx_line + 1) * 1.2, self.Gx_line])
+            x_rf2 = np.linspace(30, 50, 1000)
+            y_rf2 = self.Rf_line + ((3) * np.sinc(x_rf2 - 40))
+            self.sequenceCanvas.axes.plot(x_rf1, y_rf1, color='maroon', marker='o')
+            self.sequenceCanvas.axes.plot(x_rf2, y_rf2, color='maroon', marker='o')
+            self.sequenceCanvas.draw()
         
 
 
     def Draw_Sequence(self, df):
-        self.plot_Const_Lines()
         # plotting functions of Rf,Gz,Gy,Gx,Ro
         x_rf = np.linspace(df["RF1_Ts"].values[0], df["RF1_Te"].values[0], 1000)
         y_rf = self.Rf_line + ((df["RF1_value"].values[0]) * np.sinc(x_rf - 10))
@@ -354,7 +385,7 @@ class MainWindow(QtWidgets.QMainWindow):
                         (self.Gy_line + 2)])
 
 
-        self.sequenceCanvas.axes.axvline(x=df["RF1_Te"].values[0]/2, ls='--')
+        self.sequenceCanvas.axes.axvline(x=(df["RF1_Te"].values[0] + df["RF1_Ts"].values[0])/2, ls='--')
 
         self.sequenceCanvas.axes.set_xlabel('t (msec)')
         self.sequenceCanvas.axes.set_yticklabels([0,'Ro', 'Gx', 'Gy', 'Gz', 'Rf'])
