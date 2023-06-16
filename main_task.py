@@ -135,7 +135,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # -----------------Connect buttons with functions--------------#
         self.phantomSize_comboBox.activated.connect(lambda:self.phantomImageDraw())
         self.Prep_pulse_comboBox.activated.connect(lambda: self.choose_prep_pulse())
-        self.Choose_display_Combobox.activated.connect(lambda: self.make_threading(self.choose_where_to_display()))
+        self.Choose_display_Combobox.activated.connect(lambda: self.make_threading(self.choose_where_to_display))
         self.imageTypeCombobox.activated.connect(lambda:self.phantomImageDraw())
         self.actionOpen.triggered.connect(lambda:self.read_file())
         self.Send_Button.clicked.connect(lambda: self.calculate_ernst_angle())
