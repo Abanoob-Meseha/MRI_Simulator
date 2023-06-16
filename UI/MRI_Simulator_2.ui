@@ -44,6 +44,9 @@ color: rgb(235, 235, 235);</string>
          </widget>
         </item>
         <item>
+         <layout class="QVBoxLayout" name="verticalLayout_25"/>
+        </item>
+        <item>
          <widget class="QComboBox" name="Prep_pulse_comboBox">
           <property name="styleSheet">
            <string notr="true">color: rgb(235, 235, 235);
@@ -615,11 +618,7 @@ color: rgb(235, 235, 235);</string>
        </widget>
       </item>
       <item>
-       <widget class="QGraphicsView" name="Phantom_graphicsView">
-        <property name="styleSheet">
-         <string notr="true">background-color: rgb(255, 255, 255);</string>
-        </property>
-       </widget>
+       <layout class="QVBoxLayout" name="verticalLayout_26"/>
       </item>
       <item>
        <spacer name="horizontalSpacer_5">
@@ -888,13 +887,6 @@ color: rgb(235, 235, 235);</string>
               </property>
              </widget>
             </item>
-            <item>
-             <widget class="QGraphicsView" name="Display_1_graphicsView">
-              <property name="styleSheet">
-               <string notr="true">background-color: rgb(255, 255, 255);</string>
-              </property>
-             </widget>
-            </item>
            </layout>
           </item>
           <item>
@@ -907,13 +899,6 @@ color: rgb(235, 235, 235);</string>
               </property>
               <property name="text">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt;&quot;&gt;K-space&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QGraphicsView" name="Kspace_display_1_graphicsView">
-              <property name="styleSheet">
-               <string notr="true">background-color: rgb(255, 255, 255);</string>
               </property>
              </widget>
             </item>
@@ -936,13 +921,6 @@ color: rgb(235, 235, 235);</string>
               </property>
              </widget>
             </item>
-            <item>
-             <widget class="QGraphicsView" name="Display_2_graphicsView">
-              <property name="styleSheet">
-               <string notr="true">background-color: rgb(255, 255, 255);</string>
-              </property>
-             </widget>
-            </item>
            </layout>
           </item>
           <item>
@@ -955,13 +933,6 @@ color: rgb(235, 235, 235);</string>
               </property>
               <property name="text">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt;&quot;&gt;K-space&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QGraphicsView" name="Kspace_Display_2_graphicsView">
-              <property name="styleSheet">
-               <string notr="true">background-color: rgb(255, 255, 255);</string>
               </property>
              </widget>
             </item>

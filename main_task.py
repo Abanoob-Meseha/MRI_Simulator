@@ -83,30 +83,39 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         # -------------link ui file------------------------------#
-        uic.loadUi(r'UI/MRI_Simulator.ui', self)
+        uic.loadUi(r'UI/MRI_Simulator_2.ui', self)
 
         # --------------Adding Phantom figure to layouts-----------#
-        self.phantomLayout = self.horizontalLayout_4
+        self.phantomLayout = self.verticalLayout_26
         self.phantomCanvas = phantomMplCanvas(self.centralwidget, width=3, height=4, dpi=100)
         self.phantomLayout.addWidget(self.phantomCanvas)  # phantom Canvas
         self.phantomCanvas.mpl_connect('button_press_event', self.phantom_onClick)
         self.phantomCanvas.mpl_connect('button_release_event', self.phantom_contrast)
 
         # --------------Adding Sequence figure to layouts-----------#
-        self.sequenceLayout = self.verticalLayout_3
+        self.sequenceLayout = self.verticalLayout_25
         self.sequenceCanvas = MyMplCanvas(self.centralwidget, width=7, height=3, dpi=100)
         self.sequenceLayout.addWidget(self.sequenceCanvas)  # sequence Canvas
 
         # --------------Adding Reconstucted image figure to layouts-----------#
-        self.Reconstructedimage_graph_layout = self.verticalLayout_6
-        self.Reconstructedimage_graph = MyMplCanvas(self.centralwidget, width=3, height=3, dpi=100)
-        self.Reconstructedimage_graph_layout.addWidget(self.Reconstructedimage_graph)
+        self.Reconstructedimage_graph_layout_1 = self.verticalLayout_17
+        self.Reconstructedimage_graph_1 = MyMplCanvas(self.centralwidget, width=3, height=3, dpi=100)
+        self.Reconstructedimage_graph_layout_1.addWidget(self.Reconstructedimage_graph_1)
 
         # --------------Adding K-sapce figure to layouts-----------#
-        self.KspaceLayout = self.verticalLayout_5
-        self.Kspace_graph = MyMplCanvas(self.centralwidget, width=3, height=3, dpi=100)
-        self.KspaceLayout.addWidget(self.Kspace_graph)
-        
+        self.KspaceLayout_1 = self.verticalLayout_18
+        self.Kspace_graph_1 = MyMplCanvas(self.centralwidget, width=3, height=3, dpi=100)
+        self.KspaceLayout_1.addWidget(self.Kspace_graph_1)
+
+        # --------------Adding Reconstucted image figure to layouts-----------#
+        self.Reconstructedimage_graph_layout_2 = self.verticalLayout_19
+        self.Reconstructedimage_graph_2 = MyMplCanvas(self.centralwidget, width=3, height=3, dpi=100)
+        self.Reconstructedimage_graph_layout_2.addWidget(self.Reconstructedimage_graph_2)
+
+        # --------------Adding K-sapce figure to layouts-----------#
+        self.KspaceLayout_2 = self.verticalLayout_20
+        self.Kspace_graph_2 = MyMplCanvas(self.centralwidget, width=3, height=3, dpi=100)
+        self.KspaceLayout_2.addWidget(self.Kspace_graph_2)
         
         # ---------------------Global variables----------------------#
         #sequence variables
@@ -451,8 +460,8 @@ class MainWindow(QtWidgets.QMainWindow):
     # step 5 : we plot kspace and image after reconstruction
     def reconstruct_image(self):
         # step 1
-        self.Kspace_graph.axes.clear()
-        self.Reconstructedimage_graph.axes.clear()
+        self.Kspace_graph_1.axes.clear()
+        self.Reconstructedimage_graph_1.axes.clear()
         # choosing size of phantom
         if self.phantomSize_comboBox.currentIndex()==0:
             phantomImg = shepp_logan(16)
@@ -484,20 +493,20 @@ class MainWindow(QtWidgets.QMainWindow):
                 gradient_image = Final_matrix
                 sum_of_x = np.sum(gradient_image[:, :, 0])
                 sum_of_y = np.sum(gradient_image[:, :, 1])
-                complex_value = np.complex(sum_of_x, sum_of_y)
+                complex_value = complex(sum_of_x, sum_of_y)
                 kSpace[R, C] = complex_value
 
             Final_img = np.zeros((phantomImg.shape[0], phantomImg.shape[1], 3))
             Final_img[:, :, 2] = phantomImg
             # step 5
             Kspace_shifted = np.fft.fftshift(kSpace)
-            self.Kspace_graph.axes.imshow(np.abs(Kspace_shifted), cmap='gray')
-            self.Kspace_graph.draw()
-            self.Kspace_graph.start_event_loop(0.0005)
+            self.Kspace_graph_1.axes.imshow(np.abs(Kspace_shifted), cmap='gray')
+            self.Kspace_graph_1.draw()
+            #self.Kspace_graph_1.start_event_loop(0.0005)
             Reconstructed_image = np.fft.fft2(kSpace)
-            self.Reconstructedimage_graph.axes.imshow(np.abs(Reconstructed_image), cmap='gray')
-            self.Reconstructedimage_graph.draw()
-            self.Reconstructedimage_graph.start_event_loop(0.0005)
+            self.Reconstructedimage_graph_1.axes.imshow(np.abs(Reconstructed_image), cmap='gray')
+            self.Reconstructedimage_graph_1.draw()
+            #self.Reconstructedimage_graph_1.start_event_loop(0.0005)
             print(R)
 
     def make_threading(self, any_function):
