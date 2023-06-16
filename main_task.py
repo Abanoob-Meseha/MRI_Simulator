@@ -388,10 +388,8 @@ class MainWindow(QtWidgets.QMainWindow):
         TR_ernst = self.get_Tr_ernst()
         print(T1_ernst)
         print(TR_ernst)
-
         Ernst_angle = round(math.degrees(math.acos(math.exp(-TR_ernst / T1_ernst))), 3)
         print(Ernst_angle)
-
         self.Ernst_Angle_label.setText(Ernst_angle)
 
     def Draw_Sequence(self, df):
