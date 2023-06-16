@@ -493,7 +493,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 gradient_image = Final_matrix
                 sum_of_x = np.sum(gradient_image[:, :, 0])
                 sum_of_y = np.sum(gradient_image[:, :, 1])
-                complex_value = complex(sum_of_x, sum_of_y)
+                complex_value = np.complex(sum_of_x, sum_of_y)
                 kSpace[R, C] = complex_value
 
             Final_img = np.zeros((phantomImg.shape[0], phantomImg.shape[1], 3))
@@ -502,11 +502,11 @@ class MainWindow(QtWidgets.QMainWindow):
             Kspace_shifted = np.fft.fftshift(kSpace)
             self.Kspace_graph_1.axes.imshow(np.abs(Kspace_shifted), cmap='gray')
             self.Kspace_graph_1.draw()
-            #self.Kspace_graph_1.start_event_loop(0.0005)
+            self.Kspace_graph_1.start_event_loop(0.0005)
             Reconstructed_image = np.fft.fft2(kSpace)
             self.Reconstructedimage_graph_1.axes.imshow(np.abs(Reconstructed_image), cmap='gray')
             self.Reconstructedimage_graph_1.draw()
-            #self.Reconstructedimage_graph_1.start_event_loop(0.0005)
+            self.Reconstructedimage_graph_1.start_event_loop(0.0005)
             print(R)
 
     def make_threading(self, any_function):
