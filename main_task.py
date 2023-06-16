@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 from threading import Thread
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QMouseEvent
-
+import math
 
 
 
@@ -99,22 +99,22 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # --------------Adding Reconstucted image figure to layouts-----------#
         self.Reconstructedimage_graph_layout_1 = self.verticalLayout_17
-        self.Reconstructedimage_graph_1 = MyMplCanvas(self.centralwidget, width=3, height=3, dpi=100)
+        self.Reconstructedimage_graph_1 = MyMplCanvas(self.centralwidget, width=3, height=3.5, dpi=100)
         self.Reconstructedimage_graph_layout_1.addWidget(self.Reconstructedimage_graph_1)
 
         # --------------Adding K-sapce figure to layouts-----------#
         self.KspaceLayout_1 = self.verticalLayout_18
-        self.Kspace_graph_1 = MyMplCanvas(self.centralwidget, width=3, height=3, dpi=100)
+        self.Kspace_graph_1 = MyMplCanvas(self.centralwidget, width=3, height=3.5, dpi=100)
         self.KspaceLayout_1.addWidget(self.Kspace_graph_1)
 
         # --------------Adding Reconstucted image figure to layouts-----------#
         self.Reconstructedimage_graph_layout_2 = self.verticalLayout_19
-        self.Reconstructedimage_graph_2 = MyMplCanvas(self.centralwidget, width=3, height=3, dpi=100)
+        self.Reconstructedimage_graph_2 = MyMplCanvas(self.centralwidget, width=3, height=3.5, dpi=100)
         self.Reconstructedimage_graph_layout_2.addWidget(self.Reconstructedimage_graph_2)
 
         # --------------Adding K-sapce figure to layouts-----------#
         self.KspaceLayout_2 = self.verticalLayout_20
-        self.Kspace_graph_2 = MyMplCanvas(self.centralwidget, width=3, height=3, dpi=100)
+        self.Kspace_graph_2 = MyMplCanvas(self.centralwidget, width=3, height=3.5, dpi=100)
         self.KspaceLayout_2.addWidget(self.Kspace_graph_2)
         
         # ---------------------Global variables----------------------#
@@ -135,9 +135,10 @@ class MainWindow(QtWidgets.QMainWindow):
         # -----------------Connect buttons with functions--------------#
         self.phantomSize_comboBox.activated.connect(lambda:self.phantomImageDraw())
         self.Prep_pulse_comboBox.activated.connect(lambda: self.choose_prep_pulse())
+        self.Choose_display_Combobox.activated.connect(lambda: self.make_threading(self.choose_where_to_display()))
         self.imageTypeCombobox.activated.connect(lambda:self.phantomImageDraw())
         self.actionOpen.triggered.connect(lambda:self.read_file())
-        self.Start_Buttun.clicked.connect(lambda: self.make_threading(self.reconstruct_image))
+        self.Send_Button.clicked.connect(lambda: self.calculate_ernst_angle())
         self.Sequence_Combobox.activated.connect(self.Generate_Sequence)
         self.Value_Line_Edit.textChanged.connect(lambda: self.get_Value())
         self.Ts_Line_Edit.textChanged.connect(lambda: self.get_Ts())
@@ -145,7 +146,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.Export_Button.clicked.connect(self.write_file)
         self.TR_Line_Edit.textChanged.connect(lambda: self.get_ReptitionTime())
         self.TEcho_Line_Edit.textChanged.connect(lambda: self.get_EchoTime())
-        self.Send_Button.clicked.connect(self.DrawTR_TE)
+        self.Add_Button.clicked.connect(self.DrawTR_TE)
         self.FA_Line_Edit.textChanged.connect(lambda: self.get_Flip_angle())
     # -----------------------functions defination-----------------------------------#
     def phantom_onClick(self , event: QMouseEvent ):
@@ -222,6 +223,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.Te = self.Te_Line_Edit.text()
         return float(self.Te)
 
+
     def Clear_Line_Edits(self):
         self.Value_Line_Edit.clear()
         self.Ts_Line_Edit.clear()
@@ -289,7 +291,8 @@ class MainWindow(QtWidgets.QMainWindow):
             json.dump(self.JSON_List, f)
 
     def plot_Const_Lines(self):
-        self.sequenceCanvas.axes.cla()
+        self.sequenceCanvas.axes.clear()
+        self.sequenceCanvas.draw()
         [self.sequenceCanvas.axes.axhline(y=i, color='r', linestyle='-') for i in
          [self.Ro_line, self.Gx_line, self.Gy_line, self.Gz_line, self.Rf_line]]
         self.sequenceCanvas.axes.set_xlabel('t (msec)')
@@ -326,32 +329,70 @@ class MainWindow(QtWidgets.QMainWindow):
             self.plot_Const_Lines()
         elif self.Prep_pulse_comboBox.currentIndex()==1:
             self.plot_Const_Lines()
-            x_rf = np.linspace(0, 20, 1000)
-            y_rf = self.Rf_line + ((5) * np.sinc(x_rf - 10))
-            self.sequenceCanvas.axes.step(x=[0, 20, 20], y=[self.Gz_line, (self.Gz_line + 1) * 1.06, self.Gz_line])
+            x_rf = np.linspace(-30, -10, 1000)
+            y_rf = self.Rf_line + ((5) * np.sinc(x_rf + 20))
+            self.sequenceCanvas.axes.step(x=[-30, -10, -10], y=[self.Gz_line, (self.Gz_line + 1) * 1.06, self.Gz_line])
+            self.sequenceCanvas.axes.axvline(x=-5, ls='--')
             self.sequenceCanvas.axes.plot(x_rf, y_rf, color='maroon', marker='o')
             self.sequenceCanvas.draw()
         elif self.Prep_pulse_comboBox.currentIndex()==2:
             self.plot_Const_Lines()
-            x_rf1 = np.linspace(0, 20, 1000)
-            y_rf1 = self.Rf_line + ((3) * np.sinc(x_rf1 - 10))
-            x_rf2 = np.linspace(30, 50, 1000)
-            y_rf2 = self.Rf_line + ((3) * np.sinc(x_rf2 - 40))
+            x_rf1 = np.linspace(-60, -40, 1000)
+            y_rf1 = self.Rf_line + ((3) * np.sinc(x_rf1 + 50))
+            x_rf2 = np.linspace(-30, -10, 1000)
+            y_rf2 = self.Rf_line + ((3) * np.sinc(x_rf2 + 20))
+            self.sequenceCanvas.axes.axvline(x=-5, ls='--')
             self.sequenceCanvas.axes.plot(x_rf1, y_rf1, color='maroon', marker='o')
             self.sequenceCanvas.axes.plot(x_rf2, y_rf2, color='maroon', marker='o')
             self.sequenceCanvas.draw()
         elif self.Prep_pulse_comboBox.currentIndex()==3:
             self.plot_Const_Lines()
-            x_rf1 = np.linspace(0, 20, 1000)
-            y_rf1 = self.Rf_line + ((3) * np.sinc(x_rf1 - 10))
-            self.sequenceCanvas.axes.step(x=[20, 30, 30], y=[self.Gx_line, (self.Gx_line + 1) * 1.2, self.Gx_line])
-            x_rf2 = np.linspace(30, 50, 1000)
-            y_rf2 = self.Rf_line + ((3) * np.sinc(x_rf2 - 40))
+            x_rf1 = np.linspace(-60, -40, 1000)
+            y_rf1 = self.Rf_line + ((3) * np.sinc(x_rf1 + 50))
+            self.sequenceCanvas.axes.step(x=[-40, -30, -30], y=[self.Gx_line, (self.Gx_line + 1) * 1.2, self.Gx_line])
+            x_rf2 = np.linspace(-30, -10, 1000)
+            y_rf2 = self.Rf_line + ((3) * np.sinc(x_rf2 + 20))
+            self.sequenceCanvas.axes.axvline(x=-5, ls='--')
             self.sequenceCanvas.axes.plot(x_rf1, y_rf1, color='maroon', marker='o')
             self.sequenceCanvas.axes.plot(x_rf2, y_rf2, color='maroon', marker='o')
             self.sequenceCanvas.draw()
-        
 
+    def choose_where_to_display(self):
+        if self.Choose_display_Combobox.currentIndex() == 0:
+            self.Kspace_graph_1.axes.clear()
+            self.Kspace_graph_1.draw()
+            self.Reconstructedimage_graph_1.axes.clear()
+            self.Reconstructedimage_graph_1.draw()
+            self.Kspace_graph_2.axes.clear()
+            self.Kspace_graph_2.draw()
+            self.Reconstructedimage_graph_2.axes.clear()
+            self.Reconstructedimage_graph_2.draw()
+        elif self.Choose_display_Combobox.currentIndex()==1:
+            self.reconstruct_image(self.Kspace_graph_1, self.Reconstructedimage_graph_1)
+        elif self.Choose_display_Combobox.currentIndex()==2:
+            self.reconstruct_image(self.Kspace_graph_2, self.Reconstructedimage_graph_2)
+
+
+    def get_T1_ernst(self):
+        if self.T1_Line_Edit.text() != "":
+            self.T1_ernst = self.T1_Line_Edit.text()
+        return float(self.T1_ernst)
+
+    def get_Tr_ernst(self):
+        if self.TR_Line_Edit_2.text() != "":
+            self.Tr_ernst = self.TR_Line_Edit_2.text()
+        return float(self.Tr_ernst)
+        
+    def calculate_ernst_angle(self):
+        T1_ernst = self.get_T1_ernst()
+        TR_ernst = self.get_Tr_ernst()
+        print(T1_ernst)
+        print(TR_ernst)
+
+        Ernst_angle = round(math.degrees(math.acos(math.exp(-TR_ernst / T1_ernst))), 3)
+        print(Ernst_angle)
+
+        self.Ernst_Angle_label.setText(Ernst_angle)
 
     def Draw_Sequence(self, df):
         # plotting functions of Rf,Gz,Gy,Gx,Ro
@@ -458,10 +499,12 @@ class MainWindow(QtWidgets.QMainWindow):
     # step 3 : we made the phase to make the rotation z (gradient x and y) with it and apply gradient on rows and columns of the image
     # step 4 : we get gradient image, make sumation of values x and y and make the complex value (kspace)
     # step 5 : we plot kspace and image after reconstruction
-    def reconstruct_image(self):
+    def reconstruct_image(self, Kspace_graph, Reconstructedimage_graph):
         # step 1
-        self.Kspace_graph_1.axes.clear()
-        self.Reconstructedimage_graph_1.axes.clear()
+        Kspace_graph.axes.clear()
+        Kspace_graph.draw()
+        Reconstructedimage_graph.axes.clear()
+        Reconstructedimage_graph.draw()
         # choosing size of phantom
         if self.phantomSize_comboBox.currentIndex()==0:
             phantomImg = shepp_logan(16)
@@ -500,13 +543,13 @@ class MainWindow(QtWidgets.QMainWindow):
             Final_img[:, :, 2] = phantomImg
             # step 5
             Kspace_shifted = np.fft.fftshift(kSpace)
-            self.Kspace_graph_1.axes.imshow(np.abs(Kspace_shifted), cmap='gray')
-            self.Kspace_graph_1.draw()
-            self.Kspace_graph_1.start_event_loop(0.0005)
+            Kspace_graph.axes.imshow(np.abs(Kspace_shifted), cmap='gray')
+            Kspace_graph.draw()
+            Kspace_graph.start_event_loop(0.0005)
             Reconstructed_image = np.fft.fft2(kSpace)
-            self.Reconstructedimage_graph_1.axes.imshow(np.abs(Reconstructed_image), cmap='gray')
-            self.Reconstructedimage_graph_1.draw()
-            self.Reconstructedimage_graph_1.start_event_loop(0.0005)
+            Reconstructedimage_graph.axes.imshow(np.abs(Reconstructed_image), cmap='gray')
+            Reconstructedimage_graph.draw()
+            Reconstructedimage_graph.start_event_loop(0.0005)
             print(R)
 
     def make_threading(self, any_function):
