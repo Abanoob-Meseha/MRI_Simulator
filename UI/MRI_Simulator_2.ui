@@ -44,13 +44,6 @@ color: rgb(235, 235, 235);</string>
          </widget>
         </item>
         <item>
-         <widget class="QGraphicsView" name="Mri_sequence_graphicsView">
-          <property name="styleSheet">
-           <string notr="true">background-color: rgb(255, 255, 255);</string>
-          </property>
-         </widget>
-        </item>
-        <item>
          <widget class="QComboBox" name="Prep_pulse_comboBox">
           <property name="styleSheet">
            <string notr="true">color: rgb(235, 235, 235);
