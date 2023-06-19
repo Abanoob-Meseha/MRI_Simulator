@@ -58,7 +58,7 @@ class phantomMplCanvas(MyMplCanvas, QtWidgets.QMainWindow):
         phantomImg = shepp_logan(imageSize[imageSizeIndex])
         # MR phantom (returns proton density, T1, and T2 maps)
         PD, T1, T2 = shepp_logan((imageSize[imageSizeIndex], imageSize[imageSizeIndex], 20), MR=True)
-        imageType = [phantomImg, T1[:, :, 15], T2[:, :, 15], PD[:, :, 15]]
+        imageType = [phantomImg, T1[:, :, 7], T2[:, :, 7], PD[:, :, 7]]
         # onclick adding a pixel rectangle around the pixel
         if clickedData["clicked"] == True:
             # Create a Rectangle patch
@@ -75,9 +75,9 @@ class phantomMplCanvas(MyMplCanvas, QtWidgets.QMainWindow):
         e_img = img_contr_obj.enhance(factor)
         arrayImg = np.array(e_img)
         self.axes.imshow(arrayImg, cmap='gray')
-        return (str(T1[int(clickedData["X"]), int(clickedData["Y"]), 15]),
-                str(T2[int(clickedData["X"]), int(clickedData["Y"]), 15]),
-                str(PD[int(clickedData["X"]), int(clickedData["Y"]), 15]))
+        return (str(T1[int(clickedData["X"]), int(clickedData["Y"]), 7]),
+                str(T2[int(clickedData["X"]), int(clickedData["Y"]), 7]),
+                str(PD[int(clickedData["X"]), int(clickedData["Y"]), 7]))
 
 
 # -------------------------------------< MAINWINDOW Code >-----------------------------------------------------
@@ -584,7 +584,7 @@ class MainWindow(QtWidgets.QMainWindow):
             PD, T1, T2 = shepp_logan((16, 16, 20), MR=True)
         elif self.phantomSize_comboBox.currentIndex() == 1:
             phantomImg = shepp_logan(32)
-            PD, T1, T2 = shepp_logan((16, 16, 20), MR=True)
+            PD, T1, T2 = shepp_logan((32, 32, 20), MR=True)
         elif self.phantomSize_comboBox.currentIndex() == 2:
             phantomImg = shepp_logan(64)
             PD, T1, T2 = shepp_logan((64, 64, 20), MR=True)
@@ -600,8 +600,8 @@ class MainWindow(QtWidgets.QMainWindow):
             modified_img = self.Rotation_x(modified_img, 180)
         elif self.Prep_pulse_comboBox.currentIndex() == 2:
             modified_img = self.Rotation_x(modified_img, 90)
-            decay_rotated_matrix = self.get_decay_matrix(modified_img,T2[:,:,15],45)
-            recovery_matrix = self.get_recovery_matrix(decay_rotated_matrix, T1[:,:,15], 90)
+            decay_rotated_matrix = self.get_decay_matrix(modified_img,T2[:,:,7],45)
+            recovery_matrix = self.get_recovery_matrix(decay_rotated_matrix, T1[:,:,7], 90)
             modified_img = self.Rotation_x(recovery_matrix, -90)
         elif self.Prep_pulse_comboBox.currentIndex() == 3:
             modified_img = self.Rotation_x(modified_img, 90)
@@ -610,7 +610,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # step 2
         for R in range(0, modified_img.shape[0]):
             rotated_matrix = self.Rotation_x(modified_img, Phase_of_X)
-            decay_rotated_matrix = self.get_decay_matrix(rotated_matrix,T2[:,:,15],45)
+            decay_rotated_matrix = self.get_decay_matrix(rotated_matrix,T2[:,:,7],45)
             for C in range(0, modified_img.shape[1]):
                 # step 3
                 step_of_Y = (360 / modified_img.shape[0]) * C
@@ -629,7 +629,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 complex_value = complex(sum_of_x, sum_of_y)
                 kSpace[R, C] = complex_value
 
-            modified_img = self.get_recovery_matrix(decay_rotated_matrix, T1[:,:,15], 90)
+            modified_img = self.get_recovery_matrix(decay_rotated_matrix, T1[:,:,7], 90)
             decay_rotated_matrix[:, :, 0] = 0
             decay_rotated_matrix[:, :, 1] = 0
             Final_img = np.zeros((phantomImg.shape[0], phantomImg.shape[1], 3))
