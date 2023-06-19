@@ -1,0 +1,10 @@
+{"RF1_value": 3, "RF1_Ts": 0, "RF1_Te": 20, "RF1_repeated": "False", "RF1_reversed": "False"}
+{"Gz_value": 1.06, "Gz_Ts": 0, "Gz_Te": 15, "Gz_repeated": "False", "Gz_reversed": "False"}
+{"Gy_value": 1, "Gy_Ts": 20, "Gy_Te": 40, "Gy_repeated": "True", "Gy_reversed": "True"}
+{"Gx_value": 1, "Gx_Ts": 70, "Gx_Te": 90, "Gx_repeated": "False", "Gx_reversed": "False"}
+{"Ro_value": 3, "Ro_Ts": 70, "Ro_Te": 90, "Ro_repeated": "False", "Ro_reversed": "False"}
+{"RF2_value": 3, "RF2_Ts": 90, "RF2_Te": 110, "RF2_repeated": "False", "RF2_reversed": "False"}
+{"dephase_value": 1, "dephase_Ts": 15, "dephase_Te": 20, "dephase_Te_repeated": "False", "dephase_Te_reversed": "False", "ssfp_Noise_eff": "False"}
+{"Noise_eff_val": 1, "Noise_eff_Ts": 20, "Noise_eff_Te": 40, "Noise_eff_repeated": "False", "Noise_eff_reversed": "False"}
+{"Rephase_val": 3, "Rephase_Ts": 45, "Rephase_Te": 65, "Rephase_repeated": "False", "Rephase_reversed": "False", "SE_180_pulse": "True"}
+{"Gz_rephase_val": 1.06, "Gz_rephase_Ts": 45, "Gz_rephase_Te": 65, "Gz_rephase_repeated": "False", "Gz_rephase_reversed": "False"}
