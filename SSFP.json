@@ -1,4 +1,4 @@
-{"RF1_value": 3, "RF1_Ts": 0, "RF1_Te": 20, "RF1_repeated": "False", "RF1_reversed": "False"}
+{"RF1_value": 3, "RF1_Ts": 0, "RF1_Te": 20, "RF1_repeated": "False", "RF1_reversed": "False", "TR": 90, "TE": 45}
 {"Gz_value": 1.06, "Gz_Ts": 0, "Gz_Te": 20, "Gz_repeated": "False", "Gz_reversed": "False"}
 {"Gy_value": 1, "Gy_Ts": 20, "Gy_Te": 40, "Gy_repeated": "True", "Gy_reversed": "True"}
 {"Gx_value": 1.05, "Gx_Ts": 40, "Gx_Te": 70, "Gx_repeated": "False", "Gx_reversed": "False"}

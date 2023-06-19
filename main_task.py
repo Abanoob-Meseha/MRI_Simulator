@@ -163,9 +163,12 @@ class MainWindow(QtWidgets.QMainWindow):
             print('%s click: button=%d, x=%d, y=%d, xdata=%f, ydata=%f' %
                   ('double' if event.dblclick else 'single', event.button,
                    event.x, event.y, event.xdata, event.ydata))
-            self.T1value_label.setText(T1)
-            self.T2value_label.setText(T2)
-            self.PDvalue_label.setText(PD)
+            T1 = float(T1)
+            T2 = float(T2)
+            PD = float(PD)
+            self.T1value_label.setText(str(round(T1,3)))
+            self.T2value_label.setText(str(round(T2,3)))
+            self.PDvalue_label.setText(str(round(PD,3)))
 
         if event.button == 1:  # Left mouse button
             self.clicked_point = (event.xdata, event.ydata)
@@ -200,6 +203,7 @@ class MainWindow(QtWidgets.QMainWindow):
         T1, T2, PD = self.phantomCanvas.compute_initial_figure(imageSizeIndex=self.imageSizeIndex,
                                                                imageTypeIndex=self.imageTypeIndex,
                                                                clickedData=clicked, contrastFactor=self.contrastFactor)
+
         self.phantomLayout.addWidget(self.phantomCanvas)  # phantom Canvas
         self.phantomCanvas.mpl_connect('button_press_event', self.phantom_onClick)
         self.phantomCanvas.mpl_connect('button_release_event', self.phantom_contrast)
@@ -330,15 +334,14 @@ class MainWindow(QtWidgets.QMainWindow):
             self.sequenceCanvas.axes.text(p, 23, l, color='green')
         self.sequenceCanvas.draw()
 
-    def T1_prep(self):
+    def T1_prep_sequence(self):
         x_rf = np.linspace(-30, -10, 1000)
         y_rf = self.Rf_line + ((5) * np.sinc(x_rf + 20))
-        self.sequenceCanvas.axes.step(x=[-30, -10, -10], y=[self.Gz_line, (self.Gz_line + 1) * 1.06, self.Gz_line])
         self.sequenceCanvas.axes.axvline(x=-5, ls='--')
         self.sequenceCanvas.axes.plot(x_rf, y_rf, color='maroon', marker='o')
         self.sequenceCanvas.draw()
 
-    def T2_prep(self):
+    def T2_prep_sequence(self):
         x_rf1 = np.linspace(-60, -40, 1000)
         y_rf1 = self.Rf_line + ((3) * np.sinc(x_rf1 + 50))
         x_rf2 = np.linspace(-30, -10, 1000)
@@ -348,7 +351,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sequenceCanvas.axes.plot(x_rf2, y_rf2, color='maroon', marker='o')
         self.sequenceCanvas.draw()
 
-    def Tagging_prep(self):
+    def Tagging_prep_sequence(self):
         x_rf1 = np.linspace(-60, -40, 1000)
         y_rf1 = self.Rf_line + ((3) * np.sinc(x_rf1 + 50))
         self.sequenceCanvas.axes.step(x=[-40, -30, -30], y=[self.Gx_line, (self.Gx_line + 1) * 1.2, self.Gx_line])
@@ -365,13 +368,13 @@ class MainWindow(QtWidgets.QMainWindow):
             self.plot_Const_Lines()
         elif self.Prep_pulse_comboBox.currentIndex() == 1:
             self.plot_Const_Lines()
-            self.T1_prep()
+            self.T1_prep_sequence()
         elif self.Prep_pulse_comboBox.currentIndex() == 2:
             self.plot_Const_Lines()
-            self.T2_prep()
+            self.T2_prep_sequence()
         elif self.Prep_pulse_comboBox.currentIndex() == 3:
             self.plot_Const_Lines()
-            self.Tagging_prep()
+            self.Tagging_prep_sequence()
 
     def choose_where_to_display(self):
         if self.Choose_display_Combobox.currentIndex() == 0:
@@ -402,7 +405,7 @@ class MainWindow(QtWidgets.QMainWindow):
         T1_ernst = self.get_T1_ernst()
         TR_ernst = self.get_Tr_ernst()
         Ernst_angle = round(math.degrees(math.acos(math.exp(-TR_ernst / T1_ernst))), 3)
-        self.Ernst_Angle_label.setText("Ernst Angle: " + str(Ernst_angle))
+        self.Ernst_Angle_label.setText("Ernst Angle:   " + str(Ernst_angle))
 
     def Draw_Sequence(self, df):
         self.choose_prep_pulse()
@@ -452,6 +455,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 x=[df["Gz_Reversed_Ts"].values[10], df["Gz_Reversed_Te"].values[10], df["Gz_Reversed_Te"].values[10]],
                 y=[self.Gz_line, ((self.Gz_line + 1) * df["Gz_Reversed_val"].values[10] * -1) + (self.Gz_line + 1) + 14,
                    self.Gz_line])
+            self.sequenceCanvas.axes.step(x=[df["Gy_Ts"].values[9], df["Gy_Te"].values[9], df["Gy_Te"].values[9]],
+                                          y=[self.Gy_line, (self.Gy_line + 1) * df["Gy_value"].values[9], self.Gy_line])
             self.ploting_Repitition_And_Reversion(df, 9)
 
         self.sequenceCanvas.axes.plot(x_ro, y_ro, color='maroon', marker='o')
@@ -538,6 +543,28 @@ class MainWindow(QtWidgets.QMainWindow):
 
         return rotated_image
 
+    def get_decay_matrix(self,the_matrix, T2, t = 1):
+        Decay_matrix = np.zeros(np.shape(the_matrix))
+        for i in range(0, the_matrix.shape[0]):
+            for j in range(0, the_matrix.shape[1]):
+                exp = np.array([[np.exp(-t / (T2[i][j])), 0, 0],
+                                [0, np.exp(-t / (T2[i][j])), 0],
+                                [0, 0, 1]])
+                Decay_matrix[i, j] = exp.dot(the_matrix[i][j])
+        return Decay_matrix
+
+    def get_recovery_matrix(self,the_matrix, T1, t = 1):
+        Recovery_matrix = np.zeros(np.shape(the_matrix))
+        for i in range(0, the_matrix.shape[0]):
+            for j in range(0, the_matrix.shape[1]):
+                exp = np.array([[1, 0, 0],
+                                [0, 1, 0],
+                                [0, 0, np.exp(-t / (T1[i][j]))]])
+                Recovery_matrix[i, j] = exp.dot(the_matrix[i][j]) + np.array([0, 0, 1 - np.exp(-t / (T1[i][j]))])
+        return Recovery_matrix
+
+
+
     # Reconstrucing the image and generating kspace
     # you will find the number of the step in the function
     # step 1 : select the phantom size and modify image and get the flip angle
@@ -554,19 +581,36 @@ class MainWindow(QtWidgets.QMainWindow):
         # choosing size of phantom
         if self.phantomSize_comboBox.currentIndex() == 0:
             phantomImg = shepp_logan(16)
+            PD, T1, T2 = shepp_logan((16, 16, 20), MR=True)
         elif self.phantomSize_comboBox.currentIndex() == 1:
             phantomImg = shepp_logan(32)
+            PD, T1, T2 = shepp_logan((16, 16, 20), MR=True)
         elif self.phantomSize_comboBox.currentIndex() == 2:
             phantomImg = shepp_logan(64)
+            PD, T1, T2 = shepp_logan((64, 64, 20), MR=True)
         else:
             phantomImg = shepp_logan(16)
+            PD, T1, T2 = shepp_logan((16, 16, 20), MR=True)
 
         kSpace = np.zeros((phantomImg.shape[0], phantomImg.shape[1]), dtype=np.complex_)
         modified_img = self.modify_image(phantomImg)
         Phase_of_X = self.get_Flip_angle()
+
+        if self.Prep_pulse_comboBox.currentIndex() == 1:
+            modified_img = self.Rotation_x(modified_img, 180)
+        elif self.Prep_pulse_comboBox.currentIndex() == 2:
+            modified_img = self.Rotation_x(modified_img, 90)
+            decay_rotated_matrix = self.get_decay_matrix(modified_img,T2[:,:,15],45)
+            recovery_matrix = self.get_recovery_matrix(decay_rotated_matrix, T1[:,:,15], 90)
+            modified_img = self.Rotation_x(recovery_matrix, -90)
+        elif self.Prep_pulse_comboBox.currentIndex() == 3:
+            modified_img = self.Rotation_x(modified_img, 90)
+            modified_img = self.Rotation_x(modified_img, -90)
+
         # step 2
         for R in range(0, modified_img.shape[0]):
             rotated_matrix = self.Rotation_x(modified_img, Phase_of_X)
+            decay_rotated_matrix = self.get_decay_matrix(rotated_matrix,T2[:,:,15],45)
             for C in range(0, modified_img.shape[1]):
                 # step 3
                 step_of_Y = (360 / modified_img.shape[0]) * C
@@ -576,26 +620,29 @@ class MainWindow(QtWidgets.QMainWindow):
                 for i in range(0, modified_img.shape[0]):
                     for j in range(0, modified_img.shape[1]):
                         phase = step_of_Y * j + step_of_X * i
-                        Final_matrix[i, j] = np.dot(self.equ_of_Rotation_z(phase), rotated_matrix[i, j])
+                        Final_matrix[i, j] = np.dot(self.equ_of_Rotation_z(phase), decay_rotated_matrix[i, j])
                 # step 4
                 # Getting the value of kspace
                 gradient_image = Final_matrix
                 sum_of_x = np.sum(gradient_image[:, :, 0])
                 sum_of_y = np.sum(gradient_image[:, :, 1])
-                complex_value = np.complex(sum_of_x, sum_of_y)
+                complex_value = complex(sum_of_x, sum_of_y)
                 kSpace[R, C] = complex_value
 
+            modified_img = self.get_recovery_matrix(decay_rotated_matrix, T1[:,:,15], 90)
+            decay_rotated_matrix[:, :, 0] = 0
+            decay_rotated_matrix[:, :, 1] = 0
             Final_img = np.zeros((phantomImg.shape[0], phantomImg.shape[1], 3))
             Final_img[:, :, 2] = phantomImg
             # step 5
             Kspace_shifted = np.fft.fftshift(kSpace)
             Kspace_graph.axes.imshow(np.abs(Kspace_shifted), cmap='gray')
             Kspace_graph.draw()
-            Kspace_graph.start_event_loop(0.0005)
+            #Kspace_graph.start_event_loop(0.0005)
             Reconstructed_image = np.fft.fft2(kSpace)
             Reconstructedimage_graph.axes.imshow(np.abs(Reconstructed_image), cmap='gray')
             Reconstructedimage_graph.draw()
-            Reconstructedimage_graph.start_event_loop(0.0005)
+            #Reconstructedimage_graph.start_event_loop(0.0005)
             print(R)
 
     def make_threading(self, any_function):
