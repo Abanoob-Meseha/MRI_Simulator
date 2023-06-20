@@ -620,7 +620,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 for i in range(0, modified_img.shape[0]):
                     for j in range(0, modified_img.shape[1]):
                         phase = step_of_Y * j + step_of_X * i
-                        Final_matrix[i, j] = np.dot(self.equ_of_Rotation_z(phase), rotated_matrix[i, j])
+                        Final_matrix[i, j] = np.dot(self.equ_of_Rotation_z(phase), decay_rotated_matrix[i, j])
                 # step 4
                 # Getting the value of kspace
                 gradient_image = Final_matrix
@@ -632,8 +632,6 @@ class MainWindow(QtWidgets.QMainWindow):
             modified_img = self.get_recovery_matrix(decay_rotated_matrix, T1[:,:,7], 90)
             decay_rotated_matrix[:, :, 0] = 0
             decay_rotated_matrix[:, :, 1] = 0
-            Final_img = np.zeros((phantomImg.shape[0], phantomImg.shape[1], 3))
-            Final_img[:, :, 2] = phantomImg
             # step 5
             Kspace_shifted = np.fft.fftshift(kSpace)
             Kspace_graph.axes.imshow(np.abs(Kspace_shifted), cmap='gray')
@@ -644,6 +642,7 @@ class MainWindow(QtWidgets.QMainWindow):
             Reconstructedimage_graph.draw()
             #Reconstructedimage_graph.start_event_loop(0.0005)
             print(R)
+
 
     def make_threading(self, any_function):
         # create a thread
