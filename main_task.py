@@ -7,7 +7,6 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QSizePolicy, QFileDialog, QGraphicsScene, QGraphicsView
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from PyQt5.uic import loadUiType
 import numpy as np
 import json
 import pandas as pd
@@ -565,6 +564,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
 
+
     # Reconstrucing the image and generating kspace
     # you will find the number of the step in the function
     # step 1 : select the phantom size and modify image and get the flip angle
@@ -600,9 +600,9 @@ class MainWindow(QtWidgets.QMainWindow):
             modified_img = self.Rotation_x(modified_img, 180)
         elif self.Prep_pulse_comboBox.currentIndex() == 2:
             modified_img = self.Rotation_x(modified_img, 90)
-            decay_rotated_matrix = self.get_decay_matrix(modified_img,T2[:,:,7],45)
-            recovery_matrix = self.get_recovery_matrix(decay_rotated_matrix, T1[:,:,7], 90)
-            modified_img = self.Rotation_x(recovery_matrix, -90)
+            decayed_rotated_matrix = self.get_decay_matrix(modified_img,T2[:,:,7],45)
+            recovered_matrix = self.get_recovery_matrix(decayed_rotated_matrix, T1[:,:,7], 90)
+            modified_img = self.Rotation_x(recovered_matrix, -90)
         elif self.Prep_pulse_comboBox.currentIndex() == 3:
             modified_img = self.Rotation_x(modified_img, 90)
             modified_img = self.Rotation_x(modified_img, -90)
@@ -620,7 +620,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 for i in range(0, modified_img.shape[0]):
                     for j in range(0, modified_img.shape[1]):
                         phase = step_of_Y * j + step_of_X * i
-                        Final_matrix[i, j] = np.dot(self.equ_of_Rotation_z(phase), decay_rotated_matrix[i, j])
+                        Final_matrix[i, j] = np.dot(self.equ_of_Rotation_z(phase), rotated_matrix[i, j])
                 # step 4
                 # Getting the value of kspace
                 gradient_image = Final_matrix
