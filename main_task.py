@@ -211,7 +211,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def read_file(self):  # BROWSE TO READ THE FILE
         self.File_Path = QFileDialog.getOpenFileName(self, "Open File", "This PC",
                                                      "All Files (*);;JSON Files(*.json)")
-
+        print(self.File_Path[0])
         with open(self.File_Path[0], 'r') as handle:
             json_data = [json.loads(line) for line in handle]
         self.df = pd.DataFrame(json_data)
@@ -351,11 +351,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sequenceCanvas.draw()
 
     def Tagging_prep_sequence(self):
-        x_rf1 = np.linspace(-60, -40, 1000)
-        y_rf1 = self.Rf_line + ((3) * np.sinc(x_rf1 + 50))
-        self.sequenceCanvas.axes.step(x=[-40, -30, -30], y=[self.Gx_line, (self.Gx_line + 1) * 1.2, self.Gx_line])
-        x_rf2 = np.linspace(-30, -10, 1000)
-        y_rf2 = self.Rf_line + ((3) * np.sinc(x_rf2 + 20))
+        x_rf1 = np.linspace(-70, -50, 1000)
+        y_rf1 = self.Rf_line + ((3) * np.sinc(x_rf1 + 60))
+        self.sequenceCanvas.axes.step(x=[-50, -40, -40], y=[self.Gx_line, (self.Gx_line + 1) * 1.2, self.Gx_line])
+        x_rf2 = np.linspace(-40, -20, 1000)
+        y_rf2 = self.Rf_line + ((3) * np.sinc(x_rf2 + 30))
+        self.sequenceCanvas.axes.step(x=[-20, -10, -40], y=[self.Gx_line, (self.Gx_line + 1) * 1.4, self.Gx_line])
         self.sequenceCanvas.axes.axvline(x=-5, ls='--')
         self.sequenceCanvas.axes.plot(x_rf1, y_rf1, color='maroon', marker='o')
         self.sequenceCanvas.axes.plot(x_rf2, y_rf2, color='maroon', marker='o')
@@ -573,6 +574,15 @@ class MainWindow(QtWidgets.QMainWindow):
 
         return Final_matrix
 
+    def choose_TR_or_TE(self, TR_or_TE):
+        if(self.df["ssfp_Noise_eff"].values[8] == "False" and self.df["SE_180_pulse"].values[8] == "False"):
+            return self.df[TR_or_TE].values[0]
+        elif(self.df["SE_180_pulse"].values[8] == "True"):
+            return self.df[TR_or_TE].values[0]
+        elif (self.df["ssfp_Noise_eff"].values[8] == "True"):
+            return self.df[TR_or_TE].values[0]
+
+
     # Reconstrucing the image and generating kspace
     # you will find the number of the step in the function
     # step 1 : select the phantom size and modify image and get the flip angle
@@ -605,22 +615,33 @@ class MainWindow(QtWidgets.QMainWindow):
         Phase_of_X = self.get_Flip_angle()
 
         if self.Prep_pulse_comboBox.currentIndex() == 1:
-            modified_img = self.Rotation_x(modified_img, 180)
+            with open("D:/Ahmed/سنة رابعة/second term/MRI/Task 1 - group edition/t1_prep.json", 'r') as handle:
+                json_data = [json.loads(line) for line in handle]
+            self.df_t1 = pd.DataFrame(json_data)
+            modified_img = self.Rotation_x(modified_img, self.df_t1["RF_angle"].values[0])
+            # decayed_rotated_matrix = self.get_decay_matrix(modified_img, T2[:, :, 7], self.df_t1["inversion_delay"].values[0])
+            # modified_img = self.get_recovery_matrix(decayed_rotated_matrix, T1[:, :, 7],self.df_t1["inversion_delay"].values[0])
         elif self.Prep_pulse_comboBox.currentIndex() == 2:
-            modified_img = self.Rotation_x(modified_img, 90)
-            decayed_rotated_matrix = self.get_decay_matrix(modified_img,T2[:,:,7],45)
-            recovered_matrix = self.get_recovery_matrix(decayed_rotated_matrix, T1[:,:,7], 90)
-            modified_img = self.Rotation_x(recovered_matrix, -90)
+            with open("D:/Ahmed/سنة رابعة/second term/MRI/Task 1 - group edition/T2_prep.json", 'r') as handle:
+                json_data = [json.loads(line) for line in handle]
+            self.df_t2 = pd.DataFrame(json_data)
+            modified_img = self.Rotation_x(modified_img, self.df_t2["RF_angle"].values[0])
+            modified_img = self.get_decay_matrix(modified_img,T2[:,:,7],self.df_t2["T2_duration"].values[0])
+            modified_img = self.get_recovery_matrix(modified_img, T1[:,:,7], self.df_t2["T2_duration"].values[0])
+            modified_img = self.Rotation_x(modified_img, self.df_t2["RF_angle_2"].values[0])
         elif self.Prep_pulse_comboBox.currentIndex() == 3:
-            modified_img = self.Rotation_x(modified_img, 90)
-            modified_img = self.gradient_x_and_y(modified_img,20,20)
-            modified_img = self.Rotation_x(modified_img, -90)
-            modified_img = self.gradient_x_and_y(modified_img, 200, 200)
+            with open("D:/Ahmed/سنة رابعة/second term/MRI/Task 1 - group edition/tagging_prep.json", 'r') as handle:
+                json_data = [json.loads(line) for line in handle]
+            self.df_tagging = pd.DataFrame(json_data)
+            modified_img = self.Rotation_x(modified_img, self.df_tagging["RF_angle"].values[0])
+            modified_img = self.gradient_x_and_y(modified_img,self.df_tagging["gradient_value"].values[0],self.df_tagging["gradient_value"].values[0])
+            modified_img = self.Rotation_x(modified_img, self.df_tagging["RF_angle_2"].values[0])
+            modified_img = self.gradient_x_and_y(modified_img, self.df_tagging["spoiler_value"].values[0], self.df_tagging["spoiler_value"].values[0])
 
         # step 2
         for R in range(0, modified_img.shape[0]):
             rotated_matrix = self.Rotation_x(modified_img, Phase_of_X)
-            decay_rotated_matrix = self.get_decay_matrix(rotated_matrix,T2[:,:,7],45)
+            #decay_rotated_matrix = self.get_decay_matrix(rotated_matrix,T2[:,:,7],self.choose_TR_or_TE("TE"))
             for C in range(0, modified_img.shape[1]):
                 # step 3
                 step_of_Y = (360 / modified_img.shape[0]) * C
@@ -630,7 +651,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 for i in range(0, modified_img.shape[0]):
                     for j in range(0, modified_img.shape[1]):
                         phase = step_of_Y * j + step_of_X * i
-                        Final_matrix[i, j] = np.dot(self.equ_of_Rotation_z(phase), decay_rotated_matrix[i, j])
+                        Final_matrix[i, j] = np.dot(self.equ_of_Rotation_z(phase), rotated_matrix[i, j])
                 # step 4
                 # Getting the value of kspace
                 gradient_image = Final_matrix
@@ -639,9 +660,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 complex_value = complex(sum_of_x, sum_of_y)
                 kSpace[R, C] = complex_value
 
-            modified_img = self.get_recovery_matrix(decay_rotated_matrix, T1[:,:,7], 90)
-            decay_rotated_matrix[:, :, 0] = 0
-            decay_rotated_matrix[:, :, 1] = 0
+            #modified_img = self.get_recovery_matrix(decay_rotated_matrix, T1[:,:,7], self.choose_TR_or_TE("TR"))
+            #decay_rotated_matrix[:, :, 0] = 0
+            #decay_rotated_matrix[:, :, 1] = 0
             # step 5
             Kspace_shifted = np.fft.fftshift(kSpace)
             Kspace_graph.axes.imshow(np.abs(Kspace_shifted), cmap='gray')
