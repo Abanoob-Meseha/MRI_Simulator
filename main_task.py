@@ -563,7 +563,15 @@ class MainWindow(QtWidgets.QMainWindow):
         return Recovery_matrix
 
 
+    def gradient_x_and_y(self, image,step_x,step_y):
+        Final_matrix = np.zeros(image.shape)
+        # Applying rotation z in x&y plane
+        for i in range(0, image.shape[0]):
+            for j in range(0, image.shape[1]):
+                phase = step_y * j + step_x * i
+                Final_matrix[i, j] = np.dot(self.equ_of_Rotation_z(phase), image[i, j])
 
+        return Final_matrix
 
     # Reconstrucing the image and generating kspace
     # you will find the number of the step in the function
@@ -605,7 +613,9 @@ class MainWindow(QtWidgets.QMainWindow):
             modified_img = self.Rotation_x(recovered_matrix, -90)
         elif self.Prep_pulse_comboBox.currentIndex() == 3:
             modified_img = self.Rotation_x(modified_img, 90)
+            modified_img = self.gradient_x_and_y(modified_img,20,20)
             modified_img = self.Rotation_x(modified_img, -90)
+            modified_img = self.gradient_x_and_y(modified_img, 200, 200)
 
         # step 2
         for R in range(0, modified_img.shape[0]):
