@@ -90,7 +90,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # --------------Adding Phantom figure to layouts-----------#
         self.phantomLayout = self.verticalLayout_26
-        self.phantomCanvas = phantomMplCanvas(self.centralwidget, width=3, height=4, dpi=100)
+        self.phantomCanvas = phantomMplCanvas(self.centralwidget, width=3, height=4, dpi=120)
         self.phantomLayout.addWidget(self.phantomCanvas)  # phantom Canvas
         self.phantomCanvas.mpl_connect('button_press_event', self.phantom_onClick)
         self.phantomCanvas.mpl_connect('button_release_event', self.phantom_contrast)
@@ -134,10 +134,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.minContrast = 0.1
         self.maxContrast = 10
         self.clicked_point = None
-
+        self.Hide_Parameters()
         # -----------------Connect buttons with functions--------------#
         self.phantomSize_comboBox.activated.connect(lambda: self.phantomImageDraw())
-        self.Prep_pulse_comboBox.activated.connect(lambda: self.choose_prep_pulse())
+        self.Prep_pulse_comboBox.activated.connect(lambda: self.Parameters_Visibility())
+        #self.Prep_pulse_comboBox.activated.connect(lambda: self.choose_prep_pulse())
         self.Choose_display_Combobox.activated.connect(lambda: self.make_threading(self.choose_where_to_display))
         self.imageTypeCombobox.activated.connect(lambda: self.phantomImageDraw())
         self.actionOpen.triggered.connect(lambda: self.read_file())
@@ -153,6 +154,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.FA_Line_Edit.textChanged.connect(lambda: self.get_Flip_angle())
         self.T1_Line_Edit.textChanged.connect(lambda: self.get_T1_ernst())
         self.TR_Line_Edit_2.textChanged.connect(lambda: self.get_Tr_ernst())
+        self.Inv_Delay_Line_Edit.textChanged.connect(lambda: self.T1_prep_sequence())
+        self.Prep_Duration_Line_Edit.textChanged.connect(lambda: self.T2_prep_sequence())
+        self.Tag_Angle_Line_Edit.textChanged.connect(lambda: self.Tagging_prep_sequence())
+        self.Tag_Width_Line_Edit.textChanged.connect(lambda: self.Tagging_prep_sequence())
 
     # -----------------------functions defination-----------------------------------#
     def phantom_onClick(self, event: QMouseEvent):
@@ -198,7 +203,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.imageSizeIndex = self.phantomSize_comboBox.currentIndex()
         self.imageTypeIndex = self.imageTypeCombobox.currentIndex()
         self.phantomLayout.removeWidget(self.phantomCanvas)  # phantom Canvas
-        self.phantomCanvas = phantomMplCanvas(self.centralwidget, width=3, height=4, dpi=100)
+        self.phantomCanvas = phantomMplCanvas(self.centralwidget, width=3, height=4, dpi=120)
         T1, T2, PD = self.phantomCanvas.compute_initial_figure(imageSizeIndex=self.imageSizeIndex,
                                                                imageTypeIndex=self.imageTypeIndex,
                                                                clickedData=clicked, contrastFactor=self.contrastFactor)
@@ -333,16 +338,91 @@ class MainWindow(QtWidgets.QMainWindow):
             self.sequenceCanvas.axes.text(p, 23, l, color='green')
         self.sequenceCanvas.draw()
 
+        # Prep Pulse Control Parameters
+
+    def get_Inv_Delay(self):
+        if self.Inv_Delay_Line_Edit.text() != "":
+            self.Inv_Delay = self.Inv_Delay_Line_Edit.text()
+        return float(self.Inv_Delay)
+
+    def get_Prep_Duration(self):
+        if self.Prep_Duration_Line_Edit.text() != "":
+            self.Prep_Duration = self.Prep_Duration_Line_Edit.text()
+        return float(self.Prep_Duration)
+
+    def get_Tag_Angle(self):
+        if self.Tag_Angle_Line_Edit.text() != "":
+            self.Tag_Angle = self.Tag_Angle_Line_Edit.text()
+        return float(self.Tag_Angle)
+
+    def get_Tag_Width(self):
+        if self.Tag_Width_Line_Edit.text() != "":
+            self.Tag_Width = self.Tag_Width_Line_Edit.text()
+        return float(self.Tag_Width)
+
+    def T1_Control_Parameter(self):
+        Delay = self.get_Inv_Delay()
+        self.Ts = -30 - Delay
+        self.Te = -10 - Delay
+
+    def T2_Control_Parameter(self):
+        Duration = self.get_Prep_Duration()
+        self.Ts = -60 - Duration
+        self.Te = -40 - Duration
+
+    def Tagging_Control_Parameter(self):
+        tag_width = self.get_Tag_Width()
+        self.tagging_width = tag_width
+        if self.get_Tag_Angle() == 90:
+            self.tag_angle_number = 3
+        elif self.get_Tag_Angle() == 180:
+            self.tag_angle_number = 5
+        elif self.get_Tag_Angle() == 45:
+            self.tag_angle_number = 1
+
+    # Hide/Show Prep Parameters
+
+    def Hide_Parameters(self):
+        self.Inv_Delay_Line_Edit.setVisible(False)
+        self.Prep_Duration_Line_Edit.setVisible(False)
+        self.Tag_Angle_Line_Edit.setVisible(False)
+        self.Tag_Width_Line_Edit.setVisible(False)
+        self.label_24.setVisible(False)
+        self.label_25.setVisible(False)
+        self.label_26.setVisible(False)
+        self.label_27.setVisible(False)
+
+    def Parameters_Visibility(self):
+        self.Hide_Parameters()
+        if self.Prep_pulse_comboBox.currentIndex() == 0:
+            self.Hide_Parameters()
+            self.plot_Const_Lines()
+        elif self.Prep_pulse_comboBox.currentIndex() == 1:
+            self.Inv_Delay_Line_Edit.setVisible(True)
+            self.label_24.setVisible(True)
+        elif self.Prep_pulse_comboBox.currentIndex() == 2:
+            self.Prep_Duration_Line_Edit.setVisible(True)
+            self.label_25.setVisible(True)
+        elif self.Prep_pulse_comboBox.currentIndex() == 3:
+            self.Tag_Angle_Line_Edit.setVisible(True)
+            self.Tag_Width_Line_Edit.setVisible(True)
+            self.label_26.setVisible(True)
+            self.label_27.setVisible(True)
+
     def T1_prep_sequence(self):
-        x_rf = np.linspace(-30, -10, 1000)
-        y_rf = self.Rf_line + ((5) * np.sinc(x_rf + 20))
+        self.plot_Const_Lines()
+        self.T1_Control_Parameter()
+        x_rf = np.linspace(self.Ts, self.Te, 1000)
+        y_rf = self.Rf_line + ((5) * np.sinc(x_rf + abs(self.Ts) - 10))
         self.sequenceCanvas.axes.axvline(x=-5, ls='--')
         self.sequenceCanvas.axes.plot(x_rf, y_rf, color='maroon', marker='o')
         self.sequenceCanvas.draw()
 
     def T2_prep_sequence(self):
-        x_rf1 = np.linspace(-60, -40, 1000)
-        y_rf1 = self.Rf_line + ((3) * np.sinc(x_rf1 + 50))
+        self.plot_Const_Lines()
+        self.T2_Control_Parameter()
+        x_rf1 = np.linspace(self.Ts, self.Te, 1000)
+        y_rf1 = self.Rf_line + ((3) * np.sinc(x_rf1 + abs(self.Ts) - 10))
         x_rf2 = np.linspace(-30, -10, 1000)
         y_rf2 = self.Rf_line + ((3) * np.sinc(x_rf2 + 20))
         self.sequenceCanvas.axes.axvline(x=-5, ls='--')
@@ -351,9 +431,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sequenceCanvas.draw()
 
     def Tagging_prep_sequence(self):
-        x_rf1 = np.linspace(-70, -50, 1000)
-        y_rf1 = self.Rf_line + ((3) * np.sinc(x_rf1 + 60))
-        self.sequenceCanvas.axes.step(x=[-50, -40, -40], y=[self.Gx_line, (self.Gx_line + 1) * 1.2, self.Gx_line])
+        self.plot_Const_Lines()
+        self.Tagging_Control_Parameter()
+        x_rf1 = np.linspace(-70-self.tagging_width, -50-self.tagging_width, 1000)
+        y_rf1 = self.Rf_line + ((self.tag_angle_number) * np.sinc(x_rf1 + abs(-70-self.tagging_width) - 10))
+        self.sequenceCanvas.axes.step(x=[-50-self.tagging_width, -40, -40], y=[self.Gx_line, (self.Gx_line + 1) * 1.2, self.Gx_line])
         x_rf2 = np.linspace(-40, -20, 1000)
         y_rf2 = self.Rf_line + ((3) * np.sinc(x_rf2 + 30))
         self.sequenceCanvas.axes.step(x=[-20, -10, -40], y=[self.Gx_line, (self.Gx_line + 1) * 1.4, self.Gx_line])
@@ -362,7 +444,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sequenceCanvas.axes.plot(x_rf2, y_rf2, color='maroon', marker='o')
         self.sequenceCanvas.draw()
 
-    # choose prep pulse function
     def choose_prep_pulse(self):
         if self.Prep_pulse_comboBox.currentIndex() == 0:
             self.plot_Const_Lines()
