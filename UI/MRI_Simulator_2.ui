@@ -373,17 +373,6 @@ border-color: rgb(235, 235, 235);
        </layout>
       </item>
       <item>
-       <widget class="QPushButton" name="Add_Button">
-        <property name="styleSheet">
-         <string notr="true">font: 12pt &quot;Franklin Gothic Demi&quot;;
-background: rgb(65, 130, 195);</string>
-        </property>
-        <property name="text">
-         <string>Add</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <spacer name="horizontalSpacer_3">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>

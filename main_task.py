@@ -2,9 +2,8 @@ from phantominator import shepp_logan
 import matplotlib
 
 matplotlib.use("Qt5Agg")
-from PyQt5 import QtCore, uic, QtWidgets
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QSizePolicy, QFileDialog, QGraphicsScene, QGraphicsView
+from PyQt5 import uic, QtWidgets
+from PyQt5.QtWidgets import QApplication, QSizePolicy, QFileDialog
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import numpy as np
@@ -12,10 +11,8 @@ import json
 import pandas as pd
 import matplotlib.patches as patches
 from PIL import Image, ImageEnhance
-from matplotlib.widgets import RectangleSelector
 import matplotlib.pyplot as plt
 from threading import Thread
-from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QMouseEvent
 import math
 
@@ -138,7 +135,6 @@ class MainWindow(QtWidgets.QMainWindow):
         # -----------------Connect buttons with functions--------------#
         self.phantomSize_comboBox.activated.connect(lambda: self.phantomImageDraw())
         self.Prep_pulse_comboBox.activated.connect(lambda: self.Parameters_Visibility())
-        #self.Prep_pulse_comboBox.activated.connect(lambda: self.choose_prep_pulse())
         self.Choose_display_Combobox.activated.connect(lambda: self.make_threading(self.choose_where_to_display))
         self.imageTypeCombobox.activated.connect(lambda: self.phantomImageDraw())
         self.actionOpen.triggered.connect(lambda: self.read_file())
@@ -150,13 +146,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.Export_Button.clicked.connect(self.write_file)
         self.TR_Line_Edit.textChanged.connect(lambda: self.get_ReptitionTime())
         self.TEcho_Line_Edit.textChanged.connect(lambda: self.get_EchoTime())
-        self.Add_Button.clicked.connect(self.DrawTR_TE)
         self.FA_Line_Edit.textChanged.connect(lambda: self.get_Flip_angle())
         self.T1_Line_Edit.textChanged.connect(lambda: self.get_T1_ernst())
         self.TR_Line_Edit_2.textChanged.connect(lambda: self.get_Tr_ernst())
         self.Inv_Delay_Line_Edit.textChanged.connect(lambda: self.T1_prep_sequence())
         self.Prep_Duration_Line_Edit.textChanged.connect(lambda: self.T2_prep_sequence())
-        self.Tag_Angle_Line_Edit.textChanged.connect(lambda: self.Tagging_prep_sequence())
         self.Tag_Width_Line_Edit.textChanged.connect(lambda: self.Tagging_prep_sequence())
 
     # -----------------------functions defination-----------------------------------#
@@ -216,7 +210,6 @@ class MainWindow(QtWidgets.QMainWindow):
     def read_file(self):  # BROWSE TO READ THE FILE
         self.File_Path = QFileDialog.getOpenFileName(self, "Open File", "This PC",
                                                      "All Files (*);;JSON Files(*.json)")
-        print(self.File_Path[0])
         with open(self.File_Path[0], 'r') as handle:
             json_data = [json.loads(line) for line in handle]
         self.df = pd.DataFrame(json_data)
@@ -317,22 +310,26 @@ class MainWindow(QtWidgets.QMainWindow):
     def get_ReptitionTime(self):
         if self.TR_Line_Edit.text() != "":
             self.TR = self.TR_Line_Edit.text()
+        else:
+            self.TR = self.choose_TR_or_TE("TR")
         return float(self.TR)
 
     def get_EchoTime(self):
         if self.TEcho_Line_Edit.text() != "":
             self.TEcho = self.TEcho_Line_Edit.text()
+        else:
+            self.TEcho = self.choose_TR_or_TE("TE")
         return float(self.TEcho)
 
-    def DrawTR_TE(self):
+    def DrawTR_TE(self, ReptitionTime , EchoTime):
         for line in self.sequenceCanvas.axes.lines:
             if line.get_color() == 'green':
                 line.remove()
         for label in self.sequenceCanvas.axes.texts:
             if label.get_color() == 'green':
                 label.remove()
-        TR = self.get_ReptitionTime()
-        TE = self.get_EchoTime()
+        TR = ReptitionTime
+        TE = EchoTime
         for p, l in zip([TR, TE], ['TR', 'TE']):
             self.sequenceCanvas.axes.axvline(p, color='green', ls='--')
             self.sequenceCanvas.axes.text(p, 23, l, color='green')
@@ -343,21 +340,29 @@ class MainWindow(QtWidgets.QMainWindow):
     def get_Inv_Delay(self):
         if self.Inv_Delay_Line_Edit.text() != "":
             self.Inv_Delay = self.Inv_Delay_Line_Edit.text()
+        else:
+            self.Inv_Delay = 0
         return float(self.Inv_Delay)
 
     def get_Prep_Duration(self):
         if self.Prep_Duration_Line_Edit.text() != "":
             self.Prep_Duration = self.Prep_Duration_Line_Edit.text()
+        else:
+            self.Prep_Duration = 0
         return float(self.Prep_Duration)
 
     def get_Tag_Angle(self):
         if self.Tag_Angle_Line_Edit.text() != "":
             self.Tag_Angle = self.Tag_Angle_Line_Edit.text()
+        else:
+            self.Tag_Angle = 90
         return float(self.Tag_Angle)
 
     def get_Tag_Width(self):
         if self.Tag_Width_Line_Edit.text() != "":
             self.Tag_Width = self.Tag_Width_Line_Edit.text()
+        else:
+            self.Tag_Width = 0
         return float(self.Tag_Width)
 
     def T1_Control_Parameter(self):
@@ -400,14 +405,17 @@ class MainWindow(QtWidgets.QMainWindow):
         elif self.Prep_pulse_comboBox.currentIndex() == 1:
             self.Inv_Delay_Line_Edit.setVisible(True)
             self.label_24.setVisible(True)
+            self.T1_prep_sequence()
         elif self.Prep_pulse_comboBox.currentIndex() == 2:
             self.Prep_Duration_Line_Edit.setVisible(True)
             self.label_25.setVisible(True)
+            self.T2_prep_sequence()
         elif self.Prep_pulse_comboBox.currentIndex() == 3:
             self.Tag_Angle_Line_Edit.setVisible(True)
             self.Tag_Width_Line_Edit.setVisible(True)
             self.label_26.setVisible(True)
             self.label_27.setVisible(True)
+            self.Tagging_prep_sequence()
 
     def T1_prep_sequence(self):
         self.plot_Const_Lines()
@@ -437,7 +445,7 @@ class MainWindow(QtWidgets.QMainWindow):
         y_rf1 = self.Rf_line + ((self.tag_angle_number) * np.sinc(x_rf1 + abs(-70-self.tagging_width) - 10))
         self.sequenceCanvas.axes.step(x=[-50-self.tagging_width, -40, -40], y=[self.Gx_line, (self.Gx_line + 1) * 1.2, self.Gx_line])
         x_rf2 = np.linspace(-40, -20, 1000)
-        y_rf2 = self.Rf_line + ((3) * np.sinc(x_rf2 + 30))
+        y_rf2 = self.Rf_line + ((self.tag_angle_number) * np.sinc(x_rf2 + 30))
         self.sequenceCanvas.axes.step(x=[-20, -10, -40], y=[self.Gx_line, (self.Gx_line + 1) * 1.4, self.Gx_line])
         self.sequenceCanvas.axes.axvline(x=-5, ls='--')
         self.sequenceCanvas.axes.plot(x_rf1, y_rf1, color='maroon', marker='o')
@@ -544,6 +552,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sequenceCanvas.axes.plot(x_rf2, y_rf2, color='maroon', marker='o')
         self.sequenceCanvas.axes.axvline(x=(df["RF1_Te"].values[0] + df["RF1_Ts"].values[0]) / 2, ls='--')
 
+        self.DrawTR_TE(df["TR"].values[0],df["TE"].values[0])
+
         self.sequenceCanvas.axes.set_xlabel('t (msec)')
         self.sequenceCanvas.axes.set_yticklabels([0, 'Ro', 'Gx', 'Gy', 'Gz', 'Rf'])
         self.sequenceCanvas.draw()
@@ -583,6 +593,8 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.FA = 90
         return float(self.FA)
+
+
 
     # normalizing the image to put the minimum and maximum pixel values between 0 and 255
     def normalize_image(self, image):
@@ -695,6 +707,7 @@ class MainWindow(QtWidgets.QMainWindow):
         modified_img = self.modify_image(phantomImg)
         Phase_of_X = self.get_Flip_angle()
 
+
         if self.Prep_pulse_comboBox.currentIndex() == 1:
             with open("D:/Ahmed/سنة رابعة/second term/MRI/Task 1 - group edition/t1_prep.json", 'r') as handle:
                 json_data = [json.loads(line) for line in handle]
@@ -722,7 +735,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # step 2
         for R in range(0, modified_img.shape[0]):
             rotated_matrix = self.Rotation_x(modified_img, Phase_of_X)
-            #decay_rotated_matrix = self.get_decay_matrix(rotated_matrix,T2[:,:,7],self.choose_TR_or_TE("TE"))
+            # decay_rotated_matrix = self.get_decay_matrix(rotated_matrix,T2[:,:,7],int(self.get_EchoTime()))
             for C in range(0, modified_img.shape[1]):
                 # step 3
                 step_of_Y = (360 / modified_img.shape[0]) * C
@@ -741,9 +754,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 complex_value = complex(sum_of_x, sum_of_y)
                 kSpace[R, C] = complex_value
 
-            #modified_img = self.get_recovery_matrix(decay_rotated_matrix, T1[:,:,7], self.choose_TR_or_TE("TR"))
-            #decay_rotated_matrix[:, :, 0] = 0
-            #decay_rotated_matrix[:, :, 1] = 0
+            # modified_img = self.get_recovery_matrix(decay_rotated_matrix, T1[:,:,7], int(self.get_ReptitionTime()))
+            # decay_rotated_matrix[:, :, 0] = 0
+            # decay_rotated_matrix[:, :, 1] = 0
             # step 5
             Kspace_shifted = np.fft.fftshift(kSpace)
             Kspace_graph.axes.imshow(np.abs(Kspace_shifted), cmap='gray')
