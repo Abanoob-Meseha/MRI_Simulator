@@ -704,7 +704,7 @@ class MainWindow(QtWidgets.QMainWindow):
             PD, T1, T2 = shepp_logan((16, 16, 20), MR=True)
 
         kSpace = np.zeros((phantomImg.shape[0], phantomImg.shape[1]), dtype=np.complex_)
-        modified_img = self.modify_image(phantomImg)
+        self.modified_img = self.modify_image(phantomImg)
         Phase_of_X = self.get_Flip_angle()
 
 
@@ -712,38 +712,38 @@ class MainWindow(QtWidgets.QMainWindow):
             with open("D:/Ahmed/سنة رابعة/second term/MRI/Task 1 - group edition/t1_prep.json", 'r') as handle:
                 json_data = [json.loads(line) for line in handle]
             self.df_t1 = pd.DataFrame(json_data)
-            modified_img = self.Rotation_x(modified_img, self.df_t1["RF_angle"].values[0])
+            self.modified_img = self.Rotation_x(self.modified_img, self.df_t1["RF_angle"].values[0])
             # decayed_rotated_matrix = self.get_decay_matrix(modified_img, T2[:, :, 7], self.df_t1["inversion_delay"].values[0])
             # modified_img = self.get_recovery_matrix(decayed_rotated_matrix, T1[:, :, 7],self.df_t1["inversion_delay"].values[0])
         elif self.Prep_pulse_comboBox.currentIndex() == 2:
             with open("D:/Ahmed/سنة رابعة/second term/MRI/Task 1 - group edition/T2_prep.json", 'r') as handle:
                 json_data = [json.loads(line) for line in handle]
             self.df_t2 = pd.DataFrame(json_data)
-            modified_img = self.Rotation_x(modified_img, self.df_t2["RF_angle"].values[0])
-            modified_img = self.get_decay_matrix(modified_img,T2[:,:,7],self.df_t2["T2_duration"].values[0])
-            modified_img = self.get_recovery_matrix(modified_img, T1[:,:,7], self.df_t2["T2_duration"].values[0])
-            modified_img = self.Rotation_x(modified_img, self.df_t2["RF_angle_2"].values[0])
+            self.modified_img = self.Rotation_x(self.modified_img, self.df_t2["RF_angle"].values[0])
+            self.modified_img = self.get_decay_matrix(self.modified_img,T2[:,:,7],self.df_t2["T2_duration"].values[0])
+            self.modified_img = self.get_recovery_matrix(self.modified_img, T1[:,:,7], self.df_t2["T2_duration"].values[0])
+            self.modified_img = self.Rotation_x(self.modified_img, self.df_t2["RF_angle_2"].values[0])
         elif self.Prep_pulse_comboBox.currentIndex() == 3:
             with open("D:/Ahmed/سنة رابعة/second term/MRI/Task 1 - group edition/tagging_prep.json", 'r') as handle:
                 json_data = [json.loads(line) for line in handle]
             self.df_tagging = pd.DataFrame(json_data)
-            modified_img = self.Rotation_x(modified_img, self.df_tagging["RF_angle"].values[0])
-            modified_img = self.gradient_x_and_y(modified_img,self.df_tagging["gradient_value"].values[0],self.df_tagging["gradient_value"].values[0])
-            modified_img = self.Rotation_x(modified_img, self.df_tagging["RF_angle_2"].values[0])
-            modified_img = self.gradient_x_and_y(modified_img, self.df_tagging["spoiler_value"].values[0], self.df_tagging["spoiler_value"].values[0])
+            self.modified_img = self.Rotation_x(self.modified_img, self.df_tagging["RF_angle"].values[0])
+            self.modified_img = self.gradient_x_and_y(self.modified_img,self.df_tagging["gradient_value"].values[0],self.df_tagging["gradient_value"].values[0])
+            self.modified_img = self.Rotation_x(self.modified_img, self.df_tagging["RF_angle_2"].values[0])
+            self.modified_img = self.gradient_x_and_y(self.modified_img, self.df_tagging["spoiler_value"].values[0], self.df_tagging["spoiler_value"].values[0])
 
         # step 2
-        for R in range(0, modified_img.shape[0]):
-            rotated_matrix = self.Rotation_x(modified_img, Phase_of_X)
-            # decay_rotated_matrix = self.get_decay_matrix(rotated_matrix,T2[:,:,7],int(self.get_EchoTime()))
-            for C in range(0, modified_img.shape[1]):
+        for R in range(0, self.modified_img.shape[0]):
+            rotated_matrix = self.Rotation_x(self.modified_img, Phase_of_X)
+            #decay_rotated_matrix = self.get_decay_matrix(rotated_matrix,T2[:,:,7],int(self.get_EchoTime()))
+            for C in range(0, self.modified_img.shape[1]):
                 # step 3
-                step_of_Y = (360 / modified_img.shape[0]) * C
-                step_of_X = (360 / modified_img.shape[1]) * R
-                Final_matrix = np.zeros(modified_img.shape)
+                step_of_Y = (360 / self.modified_img.shape[0]) * C
+                step_of_X = (360 / self.modified_img.shape[1]) * R
+                Final_matrix = np.zeros(self.modified_img.shape)
                 # Applying rotation z in x&y plane
-                for i in range(0, modified_img.shape[0]):
-                    for j in range(0, modified_img.shape[1]):
+                for i in range(0, self.modified_img.shape[0]):
+                    for j in range(0, self.modified_img.shape[1]):
                         phase = step_of_Y * j + step_of_X * i
                         Final_matrix[i, j] = np.dot(self.equ_of_Rotation_z(phase), rotated_matrix[i, j])
                 # step 4
@@ -754,7 +754,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 complex_value = complex(sum_of_x, sum_of_y)
                 kSpace[R, C] = complex_value
 
-            # modified_img = self.get_recovery_matrix(decay_rotated_matrix, T1[:,:,7], int(self.get_ReptitionTime()))
+            # self.modified_img = self.get_recovery_matrix(decay_rotated_matrix, T1[:,:,7], int(self.get_ReptitionTime()))
             # decay_rotated_matrix[:, :, 0] = 0
             # decay_rotated_matrix[:, :, 1] = 0
             # step 5
@@ -767,6 +767,8 @@ class MainWindow(QtWidgets.QMainWindow):
             Reconstructedimage_graph.draw()
             #Reconstructedimage_graph.start_event_loop(0.0005)
             print(R)
+
+
 
 
     def make_threading(self, any_function):
